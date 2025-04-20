@@ -7,6 +7,7 @@ using Mirra_Orchestrator.Integration;
 using Mirra_Orchestrator.Integration.Interfaces;
 using Mirra_Orchestrator.Repository;
 using Mirra_Orchestrator.Repository.Interfaces;
+using Mirra_Orchestrator.Repository.Repositories;
 using Mirra_Orchestrator.Service;
 using Mirra_Orchestrator.Service.Interfaces;
 using System.Diagnostics;
@@ -34,8 +35,13 @@ var host = new HostBuilder()
 
         services.AddSingleton<ISchedulingRepository, SchedulingRepository>();
         services.AddSingleton<ISchedulingService, SchedulingService>();
+        services.AddSingleton<IOrchestrationService, OrchestrationService>();
+        services.AddSingleton<IWordpressService, WordpressService>();
+
         services.AddSingleton<IWordpressIntegration, WordpressIntegration>();
         services.AddSingleton<IRestClient, RestClient>();
+
+        services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
     })
    .ConfigureLogging(logging =>

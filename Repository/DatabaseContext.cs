@@ -1,10 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Mirra_Orchestrator.Model;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Mirra_Orchestrator.Repository.DbEntities;
 
 namespace Mirra_Orchestrator.Repository
 {
@@ -14,7 +9,13 @@ namespace Mirra_Orchestrator.Repository
         {
         }
 
-        public DbSet<Scheduling> Schedulings => Set<Scheduling>();
+        public DbSet<SchedulingTableRow> Schedulings => Set<SchedulingTableRow>();
+        public DbSet<CustomerTableRow> Customers => Set<CustomerTableRow>();
+        public DbSet<ContentTypeTableRow> ContentTypes => Set<ContentTypeTableRow>();
+        public DbSet<ContentTableRow> Contents => Set<ContentTableRow>();
+        public DbSet<ParametersTableRow> Parameters => Set<ParametersTableRow>();
+        public DbSet<CustomerContentTypeTableRow> CustomerContentTypes => Set<CustomerContentTypeTableRow>();
+
 
 
 

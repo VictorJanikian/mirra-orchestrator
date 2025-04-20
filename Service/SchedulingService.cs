@@ -1,6 +1,4 @@
-﻿using Mirra_Orchestrator.Integration.Interfaces;
-using Mirra_Orchestrator.Integration.Model.Request;
-using Mirra_Orchestrator.Repository.Interfaces;
+﻿using Mirra_Orchestrator.Repository.Interfaces;
 using Mirra_Orchestrator.Service.Interfaces;
 using NCrontab;
 
@@ -9,24 +7,31 @@ namespace Mirra_Orchestrator.Service
     public class SchedulingService : ISchedulingService
     {
         private ISchedulingRepository _schedulingRepository;
-        private IWordpressIntegration _wordpressIntegration;
-        public SchedulingService(ISchedulingRepository repository, IWordpressIntegration wordpressIntegration)
+        private IOrchestrationService _orchestrationService;
+        public SchedulingService(ISchedulingRepository repository, IOrchestrationService orchestrationService)
         {
             _schedulingRepository = repository;
-            _wordpressIntegration = wordpressIntegration;
+            _orchestrationService = orchestrationService;
         }
 
         public async Task runAllScheduledPosts()
         {
-            var schedulings = await _schedulingRepository.GetAllSchedulings();
-            foreach (var scheduling in schedulings)
+            try
             {
-                bool shouldRun = ShouldExecuteNow(scheduling.Interval);
-                if (shouldRun)
+                var schedulings = await _schedulingRepository.GetAllSchedulings();
+
+                foreach (var scheduling in schedulings)
                 {
-                    WordpressBlogPost blogPost = new WordpressBlogPost("Hello", "World");
-                    await _wordpressIntegration.WriteBlogPost(scheduling.Url, blogPost, scheduling.User, scheduling.Password);
+                    bool shouldRun = ShouldExecuteNow(scheduling.Interval);
+                    if (shouldRun)
+                    {
+                        await _orchestrationService.PostContent(scheduling.Customer, scheduling.ContentType, scheduling.Parameters);
+                    }
                 }
+            }
+            catch (System.Exception e)
+            {
+                Console.Write(e.Message);
             }
         }
 
