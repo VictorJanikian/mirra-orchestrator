@@ -3,6 +3,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Mirra_Orchestrator.Integration;
 using Mirra_Orchestrator.Integration.Interfaces;
 using Mirra_Orchestrator.Repository;
@@ -34,12 +36,35 @@ var host = new HostBuilder()
         });
 
         services.AddSingleton<ISchedulingRepository, SchedulingRepository>();
+        services.AddSingleton<IContentRepository, ContentRepository>();
+
         services.AddSingleton<ISchedulingService, SchedulingService>();
         services.AddSingleton<IOrchestrationService, OrchestrationService>();
-        services.AddSingleton<IWordpressService, WordpressService>();
+        services.AddSingleton<IContentGenerationService, ContentGenerationService>();
+        services.AddSingleton<IPromptFormatterService, PromptFormatterService>();
 
         services.AddSingleton<IWordpressIntegration, WordpressIntegration>();
         services.AddSingleton<IRestClient, RestClient>();
+
+        services.AddSingleton<Kernel>(provider =>
+        {
+            var configuration = provider.GetRequiredService<IConfiguration>();
+
+            return Kernel.CreateBuilder()
+                .AddAzureOpenAIChatCompletion(
+                    "gpt-4o",
+                    configuration["AI:AzureOpenAI:Endpoint"],
+                    configuration["AI:AzureOpenAI:ApiKey"]
+                )
+                .Build();
+        });
+
+        services.AddSingleton<IChatCompletionService>(provider =>
+        {
+            var kernel = provider.GetRequiredService<Kernel>();
+
+            return kernel.GetRequiredService<IChatCompletionService>();
+        });
 
         services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 

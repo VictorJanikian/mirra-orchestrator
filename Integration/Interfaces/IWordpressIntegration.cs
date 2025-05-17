@@ -1,9 +1,10 @@
 ﻿using Mirra_Orchestrator.Integration.Model.Request;
+using Mirra_Orchestrator.Model;
 
 namespace Mirra_Orchestrator.Integration.Interfaces
 {
     public interface IWordpressIntegration
     {
-        public Task WriteBlogPost(string url, WordpressBlogPost blogPost, string user, string password);
+        public Task<string> SendBlogPostToWordpress(WordpressBlogPost blogPost, CustomerContentTypeConfiguration configuration);
     }
 }

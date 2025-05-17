@@ -1,4 +1,5 @@
-﻿using Mirra_Orchestrator.Repository.Interfaces;
+﻿using Microsoft.Extensions.Logging;
+using Mirra_Orchestrator.Repository.Interfaces;
 using Mirra_Orchestrator.Service.Interfaces;
 using NCrontab;
 
@@ -8,30 +9,34 @@ namespace Mirra_Orchestrator.Service
     {
         private ISchedulingRepository _schedulingRepository;
         private IOrchestrationService _orchestrationService;
-        public SchedulingService(ISchedulingRepository repository, IOrchestrationService orchestrationService)
+        private ILogger<SchedulingService> _logger;
+        public SchedulingService(ISchedulingRepository repository,
+            IOrchestrationService orchestrationService,
+            ILogger<SchedulingService> logger)
         {
             _schedulingRepository = repository;
             _orchestrationService = orchestrationService;
+            _logger = logger;
         }
 
         public async Task runAllScheduledPosts()
         {
-            try
-            {
-                var schedulings = await _schedulingRepository.GetAllSchedulings();
+            var schedulings = await _schedulingRepository.GetAllSchedulings();
 
-                foreach (var scheduling in schedulings)
+            foreach (var scheduling in schedulings)
+            {
+                try
                 {
                     bool shouldRun = ShouldExecuteNow(scheduling.Interval);
                     if (shouldRun)
-                    {
                         await _orchestrationService.PostContent(scheduling.Customer, scheduling.ContentType, scheduling.Parameters);
-                    }
                 }
-            }
-            catch (System.Exception e)
-            {
-                Console.Write(e.Message);
+
+                catch (System.Exception e)
+                {
+                    _logger.LogInformation(e.Message + " " + e.StackTrace);
+                }
+
             }
         }
 

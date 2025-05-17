@@ -2,8 +2,8 @@
 
 namespace Mirra_Orchestrator.Repository.DbEntities
 {
-    [Table("customer_content_types")]
-    public class CustomerContentTypeTableRow : EntityTableRow
+    [Table("customer_content_types_configurations")]
+    public class CustomerContentTypeConfigurationTableRow : EntityTableRow
     {
         public int CustomerId { get; set; }
         public CustomerTableRow Customer { get; set; }

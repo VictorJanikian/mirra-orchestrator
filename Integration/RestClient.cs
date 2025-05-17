@@ -8,7 +8,7 @@ namespace Mirra_Orchestrator.Integration
 {
     class RestClient : IRestClient
     {
-        public async Task post(string url, StringContent data, Dictionary<BasicAuthenticationParameter, string> authenticationParameters)
+        public async Task<HttpResponseMessage> post(string url, StringContent data, Dictionary<BasicAuthenticationParameter, string> authenticationParameters)
         {
             using (var client = new HttpClient())
             {
@@ -22,6 +22,7 @@ namespace Mirra_Orchestrator.Integration
                 {
                     if (!response.IsSuccessStatusCode)
                         throw new RestException(response.StatusCode.ToString());
+                    return response;
                 }
             }
         }

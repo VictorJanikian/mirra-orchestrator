@@ -13,5 +13,10 @@
         public string content { get; set; }
 
         public string status { get; set; } = "publish";
+
+        public override string ToString()
+        {
+            return "Title: " + title + " Content: " + content;
+        }
     }
 }

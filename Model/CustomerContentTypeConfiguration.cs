@@ -1,6 +1,6 @@
 ﻿namespace Mirra_Orchestrator.Model
 {
-    public class CustomerContentType : Entity
+    public class CustomerContentTypeConfiguration : Entity
     {
         public Customer Customer { get; set; }
         public ContentType ContentType { get; set; }

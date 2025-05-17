@@ -8,7 +8,7 @@ namespace Mirra_Orchestrator.Repository.Mapper
     {
         public CustomerContentTypeTableRowProfile()
         {
-            CreateMap<CustomerContentTypeTableRow, CustomerContentType>();
+            CreateMap<CustomerContentTypeConfigurationTableRow, CustomerContentTypeConfiguration>();
         }
     }
 }

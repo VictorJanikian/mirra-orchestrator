@@ -1,5 +1,6 @@
-﻿using Mirra_Orchestrator.Enums;
+﻿using Mirra_Orchestrator.Integration.Interfaces;
 using Mirra_Orchestrator.Model;
+using Mirra_Orchestrator.Repository.Interfaces;
 using Mirra_Orchestrator.Service.Interfaces;
 
 namespace Mirra_Orchestrator.Service
@@ -7,21 +8,73 @@ namespace Mirra_Orchestrator.Service
     public class OrchestrationService : IOrchestrationService
     {
 
-        IWordpressService _wordpressService;
-
-        public OrchestrationService(IWordpressService wordpressService)
+        IWordpressIntegration _wordpressIntegration;
+        IContentGenerationService _contentGenerationService;
+        IContentRepository _contentRepository;
+        public OrchestrationService(IWordpressIntegration wordpressIntegration,
+            IContentGenerationService contentGenerationService,
+            IContentRepository contentRepository)
         {
-            _wordpressService = wordpressService;
+            _wordpressIntegration = wordpressIntegration;
+            _contentGenerationService = contentGenerationService;
+            _contentRepository = contentRepository;
         }
 
-        public async Task PostContent(Customer customer, ContentType contentType, Parameters parameters)
+        public async Task PostContent(Customer customer, Model.ContentType contentType, Parameters parameters)
         {
-            switch ((ContentTypes)contentType.Id)
+            var configurations = getContentTypeConfiguration(customer, contentType);
+
+            switch ((Enums.ContentType)contentType.Id)
             {
-                case ContentTypes.WORDPRESS:
-                    await _wordpressService.WriteBlogPost(customer, parameters);
-                    break;
+                case Enums.ContentType.WORDPRESS:
+                    await saveWordPressPost(customer, contentType, parameters, configurations);
             }
+        }
+
+        private async Task saveWordPressPost(Customer customer, ContentType contentType, Parameters parameters, CustomerContentTypeConfiguration configurations)
+        {
+            var blogPost = await generateBlogPost(contentType, parameters);
+            var postLink = await sendBlogPostToWordpress(configurations, blogPost);
+            var summary = await generateBlogSummary(contentType, blogPost.ToString());
+            var content = new Content()
+            {
+                ContentUrl = postLink,
+                ContentSummary = summary,
+                ContentType = contentType,
+                Customer = customer,
+                Parameters = parameters
+            };
+
+            await saveContent(content);
+            break;
+        }
+
+        private async Task<Integration.Model.Request.WordpressBlogPost> generateBlogPost(ContentType contentType, Parameters parameters)
+        {
+            return await _contentGenerationService.GenerateBlogPost(parameters, contentType.Prompt);
+        }
+
+        private async Task<string> sendBlogPostToWordpress(CustomerContentTypeConfiguration configurations, Integration.Model.Request.WordpressBlogPost blogPost)
+        {
+            return await _wordpressIntegration.SendBlogPostToWordpress(blogPost, configurations);
+        }
+
+        private async Task<string> generateBlogSummary(ContentType contentType, string blogPost)
+        {
+            return await _contentGenerationService.GenerateBlogPostSummary(blogPost, contentType.SummaryPrompt);
+        }
+
+        private CustomerContentTypeConfiguration getContentTypeConfiguration(Customer customer, ContentType contentType)
+        {
+            return customer
+                .CustomerContentTypes
+                .Where(type => type.ContentType.Id == (int)(Enums.ContentType)contentType.Id)
+                .FirstOrDefault();
+        }
+
+        private async Task saveContent(Content content)
+        {
+            await _contentRepository.Create(content);
         }
     }
 }
