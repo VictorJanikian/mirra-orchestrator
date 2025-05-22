@@ -6,25 +6,33 @@ using System.Text;
 
 namespace Mirra_Orchestrator.Integration
 {
+
     class RestClient : IRestClient
     {
+        IHttpClientFactory _factory;
+
+        public RestClient(IHttpClientFactory factory)
+        {
+            _factory = factory;
+        }
+
         public async Task<HttpResponseMessage> post(string url, StringContent data, Dictionary<BasicAuthenticationParameter, string> authenticationParameters)
         {
-            using (var client = new HttpClient())
-            {
-                var username = authenticationParameters[BasicAuthenticationParameter.USERNAME];
-                var password = authenticationParameters[BasicAuthenticationParameter.PASSWORD];
+            var client = _factory.CreateClient("wordpress");
 
-                //client.DefaultRequestHeaders.Add("Content-Type", "application/json");
-                setAuthorizationHeaders(client, username, password);
+            var username = authenticationParameters[BasicAuthenticationParameter.USERNAME];
+            var password = authenticationParameters[BasicAuthenticationParameter.PASSWORD];
 
-                using (var response = await client.PostAsync($"{url}", data))
-                {
-                    if (!response.IsSuccessStatusCode)
-                        throw new RestException(response.StatusCode.ToString());
-                    return response;
-                }
-            }
+            //client.DefaultRequestHeaders.Add("Content-Type", "application/json");
+            setAuthorizationHeaders(client, username, password);
+
+            var response = await client.PostAsync($"{url}", data);
+
+            if (!response.IsSuccessStatusCode)
+                throw new RestException(response.StatusCode.ToString());
+            return response;
+
+
         }
 
         private void setAuthorizationHeaders(HttpClient client, string username, string password)

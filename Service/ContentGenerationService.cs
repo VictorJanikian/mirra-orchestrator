@@ -19,11 +19,11 @@ namespace Mirra_Orchestrator.Service
             _modelResponseFormatter = modelResponseFormatter;
         }
 
-        public async Task<WordpressBlogPost> GenerateBlogPost(Parameters parameters,
+        public async Task<WordpressBlogPost> GenerateBlogPost(Parameters parameters, string? systemPrompt,
             string prompt)
         {
             var formattedPrompt = await _promptFormatterService.ReplacePromptVariables(prompt, parameters);
-            var modelResponse = await _modelCommunicationService.GetTextResponse(formattedPrompt);
+            var modelResponse = await _modelCommunicationService.GetTextResponse(systemPrompt, formattedPrompt);
             var postRetrievedFromModelResponse = _modelResponseFormatter.GetWordpressBlogPostFromModelResponse(modelResponse.ToString());
             return postRetrievedFromModelResponse;
 
@@ -32,7 +32,7 @@ namespace Mirra_Orchestrator.Service
         public async Task<string> GenerateBlogPostSummary(string originalPost, string summaryPrompt)
         {
             var formattedPrompt = await _promptFormatterService.ReplaceTextInsidePrompt(summaryPrompt, originalPost);
-            var modelResponse = await _modelCommunicationService.GetTextResponse(formattedPrompt);
+            var modelResponse = await _modelCommunicationService.GetTextResponse(string.Empty, formattedPrompt);
             return modelResponse.ToString();
         }
     }

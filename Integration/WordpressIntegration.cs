@@ -25,7 +25,7 @@ namespace Mirra_Orchestrator.Integration
                 {BasicAuthenticationParameter.PASSWORD, configuration.Password }
             };
 
-            var wordpressResponse = await _restClient.post(configuration.Url, GetJSONFor(blogPost), authenticationParameters);
+            using var wordpressResponse = await _restClient.post(configuration.Url, GetJSONFor(blogPost), authenticationParameters);
 
             return await getPostLinkFromResponse(wordpressResponse);
 

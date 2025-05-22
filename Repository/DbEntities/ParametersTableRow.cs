@@ -13,9 +13,10 @@ namespace Mirra_Orchestrator.Repository.DbEntities
         public string? ApproximatedSize { get; set; }
         public string? AdditionalInfo { get; set; }
         public string? Categories { get; set; }
-        public string Tags { get; set; }
+        public string? Tags { get; set; }
         public string? SEOAdditionalInformation { get; set; }
         public bool? IsDraft { get; set; }
+        public string Language { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 }

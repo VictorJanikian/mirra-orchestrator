@@ -19,7 +19,7 @@ namespace Mirra_Orchestrator.Service
                 { "Categories", parameters.Categories },
                 { "Tags", parameters.Tags },
                 { "SEOAdditionalInformation", parameters.SEOAdditionalInformation },
-
+                { "Language", parameters.Language},
 
             };
 

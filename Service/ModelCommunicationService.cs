@@ -12,9 +12,10 @@ namespace Mirra_Orchestrator.Service
             _chatService = chatService;
         }
 
-        public async Task<string> GetTextResponse(string prompt)
+        public async Task<string> GetTextResponse(string? systemPrompt, string prompt)
         {
             ChatHistory chat = new();
+            if (!string.IsNullOrEmpty(systemPrompt)) chat.AddSystemMessage(systemPrompt);
             chat.AddUserMessage(prompt);
             var modelResponse = await _chatService.GetChatMessageContentAsync(chat);
             return modelResponse.ToString();

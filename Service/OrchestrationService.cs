@@ -28,6 +28,7 @@ namespace Mirra_Orchestrator.Service
             {
                 case Enums.ContentType.WORDPRESS:
                     await saveWordPressPost(customer, contentType, parameters, configurations);
+                    break;
             }
         }
 
@@ -46,12 +47,11 @@ namespace Mirra_Orchestrator.Service
             };
 
             await saveContent(content);
-            break;
         }
 
         private async Task<Integration.Model.Request.WordpressBlogPost> generateBlogPost(ContentType contentType, Parameters parameters)
         {
-            return await _contentGenerationService.GenerateBlogPost(parameters, contentType.Prompt);
+            return await _contentGenerationService.GenerateBlogPost(parameters, contentType.SystemPrompt, contentType.Prompt);
         }
 
         private async Task<string> sendBlogPostToWordpress(CustomerContentTypeConfiguration configurations, Integration.Model.Request.WordpressBlogPost blogPost)
@@ -66,10 +66,18 @@ namespace Mirra_Orchestrator.Service
 
         private CustomerContentTypeConfiguration getContentTypeConfiguration(Customer customer, ContentType contentType)
         {
-            return customer
+            var customerContentType = customer
                 .CustomerContentTypes
                 .Where(type => type.ContentType.Id == (int)(Enums.ContentType)contentType.Id)
                 .FirstOrDefault();
+
+            if (customerContentType != null)
+            {
+                customerContentType.Customer = customer;
+                customerContentType.ContentType = contentType;
+            }
+
+            return customerContentType;
         }
 
         private async Task saveContent(Content content)

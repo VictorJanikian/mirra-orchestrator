@@ -13,9 +13,19 @@ using Mirra_Orchestrator.Repository.Repositories;
 using Mirra_Orchestrator.Service;
 using Mirra_Orchestrator.Service.Interfaces;
 using System.Diagnostics;
+using System.Net.Http.Headers;
 
 var host = new HostBuilder()
     .ConfigureFunctionsWebApplication()
+    .ConfigureAppConfiguration((context, config) =>
+    {
+
+        config.SetBasePath(Environment.CurrentDirectory)
+              .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
+              .AddUserSecrets<Program>()
+              .AddEnvironmentVariables();
+
+    })
     .ConfigureServices((context, services) =>
     {
         var configuration = context.Configuration;
@@ -42,6 +52,8 @@ var host = new HostBuilder()
         services.AddSingleton<IOrchestrationService, OrchestrationService>();
         services.AddSingleton<IContentGenerationService, ContentGenerationService>();
         services.AddSingleton<IPromptFormatterService, PromptFormatterService>();
+        services.AddSingleton<IModelCommunicationService, ModelCommunicationService>();
+        services.AddSingleton<IModelResponseFormatter, ModelResponseFormatter>();
 
         services.AddSingleton<IWordpressIntegration, WordpressIntegration>();
         services.AddSingleton<IRestClient, RestClient>();
@@ -67,6 +79,13 @@ var host = new HostBuilder()
         });
 
         services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+        services.AddHttpClient("wordpress", client =>
+        {
+            client.DefaultRequestHeaders
+                  .Accept
+                  .Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        });
 
     })
    .ConfigureLogging(logging =>
