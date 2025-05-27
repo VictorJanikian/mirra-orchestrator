@@ -1,12 +1,14 @@
-﻿using Mirra_Orchestrator.Model;
+﻿using Mirra_Orchestrator.Helpers;
+using Mirra_Orchestrator.Model;
 using Mirra_Orchestrator.Service.Interfaces;
 using System.Text.RegularExpressions;
+using static Mirra_Orchestrator.Helpers.ListHelper;
 
 namespace Mirra_Orchestrator.Service
 {
     public class PromptFormatterService : IPromptFormatterService
     {
-        public async Task<string> ReplacePromptVariables(string prompt, Parameters parameters)
+        public async Task<string> ReplacePromptVariables(string prompt, Parameters parameters, List<Content> lastContents)
         {
             var replacements = new Dictionary<string, string> {
                 { "ThemeTitle", parameters.ThemeTitle },
@@ -20,10 +22,11 @@ namespace Mirra_Orchestrator.Service
                 { "Tags", parameters.Tags },
                 { "SEOAdditionalInformation", parameters.SEOAdditionalInformation },
                 { "Language", parameters.Language},
+                { "LastContents", getLastContents(lastContents)},
 
             };
 
-            var promptWithNoUndefinedParameters = removeOptionalParametersNotPresent(prompt, parameters);
+            var promptWithNoUndefinedParameters = removeOptionalParametersNotPresent(prompt, parameters, lastContents);
 
             string result = Regex.Replace(promptWithNoUndefinedParameters, @"\{\{\s*(.*?)\s*\}\}", match =>
             {
@@ -36,22 +39,22 @@ namespace Mirra_Orchestrator.Service
             return result;
         }
 
-        private string removeOptionalParametersNotPresent(string prompt, Parameters parameters)
+        private string removeOptionalParametersNotPresent(string prompt, Parameters parameters, List<Content> lastContents)
         {
             List<(string Name, object? Value)> emptyOrNullParameters = getEmptyOrNullParameters(parameters);
 
-            if (!emptyOrNullParameters.Any())
+            if (!emptyOrNullParameters.Any() && lastContents.IsNullOrEmpty())
                 return prompt;
 
-            var pattern = @"\{\{\s*(" + string.Join("|", emptyOrNullParameters.Select(p => Regex.Escape(p.Name))) + @")\s*\}\}";
+            var pattern = @"\{\{\s*(" + string.Join("|", emptyOrNullParameters.Select(p => Regex.Escape(p.Name))) + "|" + "LastPosts" + @")\s*\}\}";
 
             var sentencesWithNotNullParameters = prompt
-                .Split('.', StringSplitOptions.RemoveEmptyEntries)
+                .Split('&', StringSplitOptions.RemoveEmptyEntries)
                 .Select(sentence => sentence.Trim())
                 .Where(sentence => !Regex.IsMatch(sentence, pattern))
                 .ToList();
 
-            return string.Join(". ", sentencesWithNotNullParameters) + (prompt.EndsWith(".") ? "." : "");
+            return string.Join(" ", sentencesWithNotNullParameters);
 
         }
 
@@ -78,6 +81,22 @@ namespace Mirra_Orchestrator.Service
             });
 
             return result;
+        }
+
+        private string getLastContents(List<Content> lastPosts)
+        {
+            if (lastPosts.IsNullOrEmpty()) return string.Empty;
+
+            var lastPostsString = string.Empty;
+
+            foreach (var post in lastPosts)
+            {
+                lastPostsString += "Título: " + post.ContentTitle + " Resumo: " + post.ContentSummary + ", ";
+            }
+
+            lastPostsString = lastPostsString.Substring(0, lastPostsString.Length - 2);
+            lastPostsString += ".";
+            return lastPostsString;
         }
     }
 }

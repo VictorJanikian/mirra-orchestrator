@@ -20,9 +20,9 @@ namespace Mirra_Orchestrator.Service
         }
 
         public async Task<WordpressBlogPost> GenerateBlogPost(Parameters parameters, string? systemPrompt,
-            string prompt)
+            string prompt, List<Content> lastPosts)
         {
-            var formattedPrompt = await _promptFormatterService.ReplacePromptVariables(prompt, parameters);
+            var formattedPrompt = await _promptFormatterService.ReplacePromptVariables(prompt, parameters, lastPosts);
             var modelResponse = await _modelCommunicationService.GetTextResponse(systemPrompt, formattedPrompt);
             var postRetrievedFromModelResponse = _modelResponseFormatter.GetWordpressBlogPostFromModelResponse(modelResponse.ToString());
             return postRetrievedFromModelResponse;

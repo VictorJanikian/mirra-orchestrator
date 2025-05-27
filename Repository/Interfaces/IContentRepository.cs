@@ -5,5 +5,7 @@ namespace Mirra_Orchestrator.Repository.Interfaces
     public interface IContentRepository
     {
         Task<Content> Create(Content content);
+
+        Task<List<Content>> GetByCustomerAndContentType(Customer customer, ContentType contentType);
     }
 }

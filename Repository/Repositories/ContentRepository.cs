@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Microsoft.EntityFrameworkCore;
 using Mirra_Orchestrator.Model;
 using Mirra_Orchestrator.Repository.DbEntities;
 using Mirra_Orchestrator.Repository.Interfaces;
@@ -18,6 +20,16 @@ namespace Mirra_Orchestrator.Repository.Repositories
             await _context.SaveChangesAsync();
             content.Id = row.Id;
             return content;
+        }
+
+        public async Task<List<Content>> GetByCustomerAndContentType(Customer customer, ContentType contentType)
+        {
+            return await _context
+                   .Contents
+                   .AsNoTracking()
+                   .Where(content => content.CustomerId == customer.Id && content.ContentTypeId == contentType.Id)
+                   .ProjectTo<Content>(_mapper.ConfigurationProvider)
+                   .ToListAsync();
         }
     }
 }

@@ -11,8 +11,9 @@ namespace Mirra_Orchestrator.Repository.DbEntities
         public ParametersTableRow Parameter { get; set; }
         public int ContentTypeId { get; set; }
         public ContentTypeTableRow ContentType { get; set; }
+        public string? ContentTitle { get; set; }
         public string ContentUrl { get; set; }
         public string ContentSummary { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTime? CreatedAt { get; set; }
     }
 }

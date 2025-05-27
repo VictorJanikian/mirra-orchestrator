@@ -53,6 +53,7 @@ var host = new HostBuilder()
         services.AddSingleton<IContentGenerationService, ContentGenerationService>();
         services.AddSingleton<IPromptFormatterService, PromptFormatterService>();
         services.AddSingleton<IModelCommunicationService, ModelCommunicationService>();
+        services.AddSingleton<IPreviousContentRecoveryService, PreviousContentRecoveryService>();
         services.AddSingleton<IModelResponseFormatter, ModelResponseFormatter>();
 
         services.AddSingleton<IWordpressIntegration, WordpressIntegration>();

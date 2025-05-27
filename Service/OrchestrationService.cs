@@ -2,6 +2,7 @@
 using Mirra_Orchestrator.Model;
 using Mirra_Orchestrator.Repository.Interfaces;
 using Mirra_Orchestrator.Service.Interfaces;
+using static Mirra_Orchestrator.Helpers.TextHelper;
 
 namespace Mirra_Orchestrator.Service
 {
@@ -11,13 +12,16 @@ namespace Mirra_Orchestrator.Service
         IWordpressIntegration _wordpressIntegration;
         IContentGenerationService _contentGenerationService;
         IContentRepository _contentRepository;
+        IPreviousContentRecoveryService _previousContentRecoveryService;
         public OrchestrationService(IWordpressIntegration wordpressIntegration,
             IContentGenerationService contentGenerationService,
-            IContentRepository contentRepository)
+            IContentRepository contentRepository,
+            IPreviousContentRecoveryService previousContentRecoveryService)
         {
             _wordpressIntegration = wordpressIntegration;
             _contentGenerationService = contentGenerationService;
             _contentRepository = contentRepository;
+            _previousContentRecoveryService = previousContentRecoveryService;
         }
 
         public async Task PostContent(Customer customer, Model.ContentType contentType, Parameters parameters)
@@ -34,11 +38,13 @@ namespace Mirra_Orchestrator.Service
 
         private async Task saveWordPressPost(Customer customer, ContentType contentType, Parameters parameters, CustomerContentTypeConfiguration configurations)
         {
-            var blogPost = await generateBlogPost(contentType, parameters);
+            List<Content> lastPosts = await getLastsPostsFrom(customer, contentType);
+            var blogPost = await generateBlogPost(contentType, parameters, lastPosts);
             var postLink = await sendBlogPostToWordpress(configurations, blogPost);
             var summary = await generateBlogSummary(contentType, blogPost.ToString());
             var content = new Content()
             {
+                ContentTitle = RemoveHtmlTags(blogPost.title),
                 ContentUrl = postLink,
                 ContentSummary = summary,
                 ContentType = contentType,
@@ -49,9 +55,14 @@ namespace Mirra_Orchestrator.Service
             await saveContent(content);
         }
 
-        private async Task<Integration.Model.Request.WordpressBlogPost> generateBlogPost(ContentType contentType, Parameters parameters)
+        private async Task<List<Content>> getLastsPostsFrom(Customer customer, ContentType contentType)
         {
-            return await _contentGenerationService.GenerateBlogPost(parameters, contentType.SystemPrompt, contentType.Prompt);
+            return await _previousContentRecoveryService.getLastContentsFrom(customer, contentType);
+        }
+
+        private async Task<Integration.Model.Request.WordpressBlogPost> generateBlogPost(ContentType contentType, Parameters parameters, List<Content> lastPosts)
+        {
+            return await _contentGenerationService.GenerateBlogPost(parameters, contentType.SystemPrompt, contentType.Prompt, lastPosts);
         }
 
         private async Task<string> sendBlogPostToWordpress(CustomerContentTypeConfiguration configurations, Integration.Model.Request.WordpressBlogPost blogPost)
