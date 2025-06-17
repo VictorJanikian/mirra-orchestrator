@@ -29,7 +29,9 @@ namespace Mirra_Orchestrator.Service
                 {
                     bool shouldRun = ShouldExecuteNow(scheduling.Interval);
                     if (shouldRun)
-                        await _orchestrationService.PostContent(scheduling.Customer, scheduling.ContentType, scheduling.Parameters);
+                        await _orchestrationService.PostContent(scheduling.CustomerContentTypeConfigurations.Customer,
+                                                                scheduling.CustomerContentTypeConfigurations.ContentType,
+                                                                scheduling.Parameters);
                 }
 
                 catch (System.Exception e)

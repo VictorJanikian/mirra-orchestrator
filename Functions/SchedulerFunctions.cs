@@ -2,14 +2,14 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using Mirra_Orchestrator.Service.Interfaces;
 
-namespace Mirra_Orchestrator
+namespace Mirra_Orchestrator.Functions
 {
-    public class Scheduler
+    public class SchedulerFunctions
     {
-        private readonly ILogger<Scheduler> _logger;
+        private readonly ILogger<SchedulerFunctions> _logger;
         private readonly ISchedulingService _schedulingService;
 
-        public Scheduler(ILogger<Scheduler> logger, ISchedulingService schedulingService)
+        public SchedulerFunctions(ILogger<SchedulerFunctions> logger, ISchedulingService schedulingService)
         {
             _logger = logger;
             _schedulingService = schedulingService;

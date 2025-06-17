@@ -2,11 +2,9 @@
 {
     public class Scheduling : Entity
     {
-        public Customer Customer { get; set; }
+        public CustomerContentTypeConfiguration CustomerContentTypeConfigurations { get; set; }
         public Parameters Parameters { get; set; }
         public string Interval { get; set; }
-        public ContentType ContentType { get; set; }
-
 
     }
 }
