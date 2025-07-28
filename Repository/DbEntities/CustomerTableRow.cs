@@ -7,7 +7,7 @@ namespace Mirra_Orchestrator.Repository.DbEntities
     {
         public string Name { get; set; }
         public string? Email { get; set; }
-        public List<CustomerContentTypeConfigurationTableRow> CustomerContentTypes { get; set; }
+        public List<CustomerContentPlatformConfigurationTableRow> CustomerContentPlatforms { get; set; }
 
         public DateTime CreatedAt { get; set; }
     }

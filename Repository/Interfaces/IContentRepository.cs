@@ -6,6 +6,6 @@ namespace Mirra_Orchestrator.Repository.Interfaces
     {
         Task<Content> Create(Content content);
 
-        Task<List<Content>> GetByCustomerAndContentType(Customer customer, ContentType contentType);
+        Task<List<Content>> GetByCustomerAndPlatformConfiguration(CustomerContentPlatformConfiguration configuration);
     }
 }

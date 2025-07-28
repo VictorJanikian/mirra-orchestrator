@@ -4,6 +4,6 @@ namespace Mirra_Orchestrator.Service.Interfaces
 {
     public interface IPreviousContentRecoveryService
     {
-        public Task<List<Content>> getLastContentsFrom(Customer customer, ContentType contentType);
+        public Task<List<Content>> getLastContentsFrom(CustomerContentPlatformConfiguration configurations);
     }
 }

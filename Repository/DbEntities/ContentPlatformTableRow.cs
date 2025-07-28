@@ -2,8 +2,8 @@
 
 namespace Mirra_Orchestrator.Repository.DbEntities
 {
-    [Table("content_types")]
-    public class ContentTypeTableRow : EntityTableRow
+    [Table("content_platforms")]
+    public class ContentPlatformTableRow : EntityTableRow
     {
         public string Name { get; set; }
         public string? Prompt { get; set; }

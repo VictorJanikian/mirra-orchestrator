@@ -17,7 +17,7 @@ namespace Mirra_Orchestrator.Integration
         }
 
 
-        public async Task<string> SendBlogPostToWordpress(WordpressBlogPost blogPost, CustomerContentTypeConfiguration configuration)
+        public async Task<string> SendBlogPostToWordpress(WordpressBlogPost blogPost, CustomerContentPlatformConfiguration configuration)
         {
             var authenticationParameters = new Dictionary<BasicAuthenticationParameter, string>()
             {

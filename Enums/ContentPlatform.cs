@@ -1,6 +1,6 @@
 ﻿namespace Mirra_Orchestrator.Enums
 {
-    public enum ContentType
+    public enum ContentPlatform
     {
         WORDPRESS = 1
     }

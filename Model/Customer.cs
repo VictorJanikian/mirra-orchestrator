@@ -4,6 +4,6 @@
     {
         public string Name { get; set; }
         public string Email { get; set; }
-        public List<CustomerContentTypeConfiguration> CustomerContentTypes { get; set; }
+        public List<CustomerContentPlatformConfiguration> CustomerContentPlatforms { get; set; }
     }
 }
