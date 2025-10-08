@@ -36,7 +36,8 @@ var host = new HostBuilder()
 
         services.AddDbContext<DatabaseContext>(options =>
         {
-            options.UseMySQL(configuration.GetConnectionString("DefaultConnection"));
+
+            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
 
 #if DEBUG
             options.EnableSensitiveDataLogging()  // Enable detailed logging, including SQL parameters (only in Debug mode)

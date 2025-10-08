@@ -4,6 +4,6 @@ namespace Mirra_Orchestrator.Service.Interfaces
 {
     public interface IOrchestrationService
     {
-        Task PostContent(Customer customer, ContentPlatform contentPlatform, Parameters parameters);
+        Task PostContent(Customer customer, Platform platform, Parameters parameters);
     }
 }

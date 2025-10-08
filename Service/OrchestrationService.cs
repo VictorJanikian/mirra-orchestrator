@@ -24,70 +24,70 @@ namespace Mirra_Orchestrator.Service
             _previousContentRecoveryService = previousContentRecoveryService;
         }
 
-        public async Task PostContent(Customer customer, Model.ContentPlatform contentPlatform, Parameters parameters)
+        public async Task PostContent(Customer customer, Platform platform, Parameters parameters)
         {
-            var configurations = getContentPlatformConfiguration(customer, contentPlatform);
+            var configurations = getPlatformConfiguration(customer, platform);
 
-            switch ((Enums.ContentPlatform)contentPlatform.Id)
+            switch ((Enums.Platform)platform.Id)
             {
-                case Enums.ContentPlatform.WORDPRESS:
-                    await saveWordPressPost(customer, contentPlatform, parameters, configurations);
+                case Enums.Platform.WORDPRESS:
+                    await saveWordPressPost(customer, platform, parameters, configurations);
                     break;
             }
         }
 
-        private async Task saveWordPressPost(Customer customer, ContentPlatform contentPlatform, Parameters parameters, CustomerContentPlatformConfiguration configurations)
+        private async Task saveWordPressPost(Customer customer, Platform platform, Parameters parameters, CustomerPlatformTableRow configurations)
         {
             List<Content> lastPosts = await getLastsPostsForThis(configurations);
-            var blogPost = await generateBlogPost(contentPlatform, parameters, lastPosts);
+            var blogPost = await generateBlogPost(platform, parameters, lastPosts);
             var postLink = await sendBlogPostToWordpress(configurations, blogPost);
-            var summary = await generateBlogSummary(contentPlatform, blogPost.ToString());
+            var summary = await generateBlogSummary(platform, blogPost.ToString());
             var content = new Content()
             {
                 ContentTitle = RemoveHtmlTags(blogPost.title),
                 ContentUrl = postLink,
                 ContentSummary = summary,
-                CustomerContentPlatformConfiguration = configurations,
+                CustomerPlatformConfiguration = configurations,
                 Parameters = parameters
             };
 
             await saveContent(content);
         }
 
-        private async Task<List<Content>> getLastsPostsForThis(CustomerContentPlatformConfiguration configurations)
+        private async Task<List<Content>> getLastsPostsForThis(CustomerPlatformTableRow configurations)
         {
             return await _previousContentRecoveryService.getLastContentsFrom(configurations);
         }
 
-        private async Task<Integration.Model.Request.WordpressBlogPost> generateBlogPost(ContentPlatform contentPlatform, Parameters parameters, List<Content> lastPosts)
+        private async Task<Integration.Model.Request.WordpressBlogPost> generateBlogPost(Platform platform, Parameters parameters, List<Content> lastPosts)
         {
-            return await _contentGenerationService.GenerateBlogPost(parameters, contentPlatform.SystemPrompt, contentPlatform.Prompt, lastPosts);
+            return await _contentGenerationService.GenerateBlogPost(parameters, platform.SystemPrompt, platform.Prompt, lastPosts);
         }
 
-        private async Task<string> sendBlogPostToWordpress(CustomerContentPlatformConfiguration configurations, Integration.Model.Request.WordpressBlogPost blogPost)
+        private async Task<string> sendBlogPostToWordpress(CustomerPlatformTableRow configurations, Integration.Model.Request.WordpressBlogPost blogPost)
         {
             return await _wordpressIntegration.SendBlogPostToWordpress(blogPost, configurations);
         }
 
-        private async Task<string> generateBlogSummary(ContentPlatform contentPlatform, string blogPost)
+        private async Task<string> generateBlogSummary(Platform platform, string blogPost)
         {
-            return await _contentGenerationService.GenerateBlogPostSummary(blogPost, contentPlatform.SummaryPrompt);
+            return await _contentGenerationService.GenerateBlogPostSummary(blogPost, platform.SummaryPrompt);
         }
 
-        private CustomerContentPlatformConfiguration getContentPlatformConfiguration(Customer customer, ContentPlatform contentPlatform)
+        private CustomerPlatformTableRow getPlatformConfiguration(Customer customer, Platform platform)
         {
-            var customerContentPlatform = customer
-                .CustomerContentPlatforms
-                .Where(type => type.ContentPlatform.Id == (int)(Enums.ContentPlatform)contentPlatform.Id)
+            var customerPlatform = customer
+                .CustomerPlatforms
+                .Where(type => type.Platform.Id == (int)(Enums.Platform)platform.Id)
                 .FirstOrDefault();
 
-            if (customerContentPlatform != null)
+            if (customerPlatform != null)
             {
-                customerContentPlatform.Customer = customer;
-                customerContentPlatform.ContentPlatform = contentPlatform;
+                customerPlatform.Customer = customer;
+                customerPlatform.Platform = platform;
             }
 
-            return customerContentPlatform;
+            return customerPlatform;
         }
 
         private async Task saveContent(Content content)

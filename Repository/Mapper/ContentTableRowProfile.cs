@@ -9,11 +9,11 @@ namespace Mirra_Orchestrator.Repository.Mapper
         public ContentTableRowProfile()
         {
             CreateMap<Content, ContentTableRow>()
-                .ForMember(row => row.CustomerContentPlatformConfiguration, options => options.Ignore())
+                .ForMember(row => row.CustomerPlatformConfiguration, options => options.Ignore())
                 .ForMember(row => row.Parameter, options => options.Ignore())
                 .ForMember(row => row.CreatedAt, options => options.Ignore())
                 .ForMember(row => row.ParameterId, options => options.MapFrom(entity => entity.Parameters.Id))
-                .ForMember(row => row.CustomerContentPlatformConfigurationId, options => options.MapFrom(entity => entity.CustomerContentPlatformConfiguration.Id))
+                .ForMember(row => row.CustomerPlatformConfigurationId, options => options.MapFrom(entity => entity.CustomerPlatformConfiguration.Id))
                 .AfterMap((entity, row) => row.CreatedAt = row.CreatedAt ?? DateTime.Now);
 
             CreateMap<ContentTableRow, Content>();

@@ -1,6 +1,6 @@
 ﻿namespace Mirra_Orchestrator.Model
 {
-    public class ContentPlatform : Entity
+    public class Platform : Entity
     {
         public string Name { get; set; }
         public string Prompt { get; set; }

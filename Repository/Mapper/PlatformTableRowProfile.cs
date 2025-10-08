@@ -4,11 +4,11 @@ using Mirra_Orchestrator.Repository.DbEntities;
 
 namespace Mirra_Orchestrator.Repository.Mapper
 {
-    public class ContentPlatformTableRowProfile : Profile
+    public class PlatformTableRowProfile : Profile
     {
-        public ContentPlatformTableRowProfile()
+        public PlatformTableRowProfile()
         {
-            CreateMap<ContentPlatformTableRow, ContentPlatform>();
+            CreateMap<PlatformTableRow, Platform>();
         }
     }
 }

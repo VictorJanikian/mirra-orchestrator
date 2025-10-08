@@ -2,7 +2,7 @@
 {
     public class Content : Entity
     {
-        public CustomerContentPlatformConfiguration CustomerContentPlatformConfiguration { get; set; }
+        public CustomerPlatformTableRow CustomerPlatformConfiguration { get; set; }
         public Parameters Parameters { get; set; }
         public string ContentTitle { get; set; }
         public string ContentUrl { get; set; }

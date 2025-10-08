@@ -22,12 +22,12 @@ namespace Mirra_Orchestrator.Repository.Repositories
             return content;
         }
 
-        public async Task<List<Content>> GetByCustomerAndPlatformConfiguration(CustomerContentPlatformConfiguration configuration)
+        public async Task<List<Content>> GetByCustomerAndPlatformConfiguration(CustomerPlatformTableRow configuration)
         {
             return await _context
                    .Contents
                    .AsNoTracking()
-                   .Where(content => content.CustomerContentPlatformConfigurationId == configuration.Id)
+                   .Where(content => content.CustomerPlatformConfigurationId == configuration.Id)
                    .ProjectTo<Content>(_mapper.ConfigurationProvider)
                    .ToListAsync();
         }
