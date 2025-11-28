@@ -39,14 +39,17 @@ namespace Mirra_Orchestrator.Service
             return result;
         }
 
-        private string removeOptionalParametersNotPresent(string prompt, Parameters parameters, List<Content> lastContents)
+        private string removeOptionalParametersNotPresent(string prompt, Parameters parameters, List<Content> LastContents)
         {
             List<(string Name, object? Value)> emptyOrNullParameters = getEmptyOrNullParameters(parameters);
 
-            if (!emptyOrNullParameters.Any() && lastContents.IsNullOrEmpty())
+            if (LastContents.IsNullOrEmpty())
+                emptyOrNullParameters.Add(("LastContents", null));
+
+            if (!emptyOrNullParameters.Any())
                 return prompt;
 
-            var pattern = @"\{\{\s*(" + string.Join("|", emptyOrNullParameters.Select(p => Regex.Escape(p.Name))) + "|" + "LastPosts" + @")\s*\}\}";
+            var pattern = @"\{\{\s*(" + string.Join("|", emptyOrNullParameters.Select(p => Regex.Escape(p.Name))) + @")\s*\}\}";
 
             var sentencesWithNotNullParameters = prompt
                 .Split('&', StringSplitOptions.RemoveEmptyEntries)
@@ -55,7 +58,6 @@ namespace Mirra_Orchestrator.Service
                 .ToList();
 
             return string.Join(" ", sentencesWithNotNullParameters);
-
         }
 
         private static List<(string Name, object? Value)> getEmptyOrNullParameters(Parameters parameters)
