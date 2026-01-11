@@ -16,7 +16,7 @@ namespace Mirra_Orchestrator.Integration
             _factory = factory;
         }
 
-        public async Task<HttpResponseMessage> post(string url, StringContent data, Dictionary<BasicAuthenticationParameter, string> authenticationParameters)
+        public async Task<HttpResponseMessage> post(string url, HttpContent data, Dictionary<BasicAuthenticationParameter, string> authenticationParameters)
         {
             var client = _factory.CreateClient("wordpress");
 
@@ -34,6 +34,7 @@ namespace Mirra_Orchestrator.Integration
 
 
         }
+
 
         private void setAuthorizationHeaders(HttpClient client, string username, string password)
         {

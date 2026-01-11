@@ -3,8 +3,11 @@ using Mirra_Orchestrator.Model;
 
 namespace Mirra_Orchestrator.Integration.Interfaces
 {
-    public interface IWordpressIntegration
+    public interface IWordpressIntegration : IImageRepository
     {
-        public Task<string> SendBlogPostToWordpress(WordpressBlogPost blogPost, CustomerPlatformTableRow configuration);
+        public CustomerPlatformTableRow _configuration { get; set; }
+
+        public Task<string> SendBlogPostToWordpress(WordpressBlogPost blogPost);
+
     }
 }

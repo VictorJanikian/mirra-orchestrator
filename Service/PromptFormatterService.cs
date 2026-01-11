@@ -22,6 +22,7 @@ namespace Mirra_Orchestrator.Service
                 { "Tags", parameters.Tags },
                 { "SEOAdditionalInformation", parameters.SEOAdditionalInformation },
                 { "Language", parameters.Language},
+                { "CTA", parameters.CTA},
                 { "LastContents", getLastContents(lastContents)},
 
             };
@@ -52,7 +53,7 @@ namespace Mirra_Orchestrator.Service
             var pattern = @"\{\{\s*(" + string.Join("|", emptyOrNullParameters.Select(p => Regex.Escape(p.Name))) + @")\s*\}\}";
 
             var sentencesWithNotNullParameters = prompt
-                .Split('&', StringSplitOptions.RemoveEmptyEntries)
+                .Split("&!", StringSplitOptions.RemoveEmptyEntries)
                 .Select(sentence => sentence.Trim())
                 .Where(sentence => !Regex.IsMatch(sentence, pattern))
                 .ToList();

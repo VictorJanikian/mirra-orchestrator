@@ -17,6 +17,7 @@ namespace Mirra_Orchestrator.Repository.DbEntities
         public string? SEOAdditionalInformation { get; set; }
         public bool? IsDraft { get; set; }
         public string Language { get; set; }
+        public string? CTA { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 }

@@ -7,5 +7,6 @@ namespace Mirra_Orchestrator.Service.Interfaces
         Task<string> ReplacePromptVariables(string prompt, Parameters parameters, List<Content> lastPosts);
 
         Task<string> ReplaceTextInsidePrompt(string prompt, string text);
+
     }
 }

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.TextToImage;
 using Mirra_Orchestrator.Integration;
 using Mirra_Orchestrator.Integration.Interfaces;
 using Mirra_Orchestrator.Repository;
@@ -46,19 +47,20 @@ var host = new HostBuilder()
 #endif
         });
 
-        services.AddSingleton<ISchedulingRepository, SchedulingRepository>();
-        services.AddSingleton<IContentRepository, ContentRepository>();
+        services.AddScoped<ISchedulingRepository, SchedulingRepository>();
+        services.AddScoped<IContentRepository, ContentRepository>();
 
-        services.AddSingleton<ISchedulingService, SchedulingService>();
-        services.AddSingleton<IOrchestrationService, OrchestrationService>();
-        services.AddSingleton<IContentGenerationService, ContentGenerationService>();
-        services.AddSingleton<IPromptFormatterService, PromptFormatterService>();
-        services.AddSingleton<IModelCommunicationService, ModelCommunicationService>();
-        services.AddSingleton<IPreviousContentRecoveryService, PreviousContentRecoveryService>();
-        services.AddSingleton<IModelResponseFormatter, ModelResponseFormatter>();
+        services.AddScoped<ISchedulingService, SchedulingService>();
+        services.AddScoped<IOrchestrationService, OrchestrationService>();
+        services.AddScoped<IContentGenerationService, ContentGenerationService>();
+        services.AddScoped<IPromptFormatterService, PromptFormatterService>();
+        services.AddScoped<IModelCommunicationService, ModelCommunicationService>();
+        services.AddScoped<IPreviousContentRecoveryService, PreviousContentRecoveryService>();
+        services.AddScoped<IModelResponseFormatter, ModelResponseFormatter>();
 
-        services.AddSingleton<IWordpressIntegration, WordpressIntegration>();
-        services.AddSingleton<IRestClient, RestClient>();
+        services.AddScoped<IWordpressIntegration, WordpressIntegration>();
+        services.AddScoped<IOpenAIIntegration, OpenAIIntegration>();
+        services.AddScoped<IRestClient, RestClient>();
 
         services.AddSingleton<Kernel>(provider =>
         {
@@ -70,6 +72,10 @@ var host = new HostBuilder()
                     configuration["AI:AzureOpenAI:Endpoint"],
                     configuration["AI:AzureOpenAI:ApiKey"]
                 )
+                .AddOpenAITextToImage(
+                    configuration["AI:OpenAI:ApiKey"],
+                    modelId: "gpt-image-1-mini"
+                )
                 .Build();
         });
 
@@ -78,6 +84,13 @@ var host = new HostBuilder()
             var kernel = provider.GetRequiredService<Kernel>();
 
             return kernel.GetRequiredService<IChatCompletionService>();
+        });
+
+        services.AddSingleton<ITextToImageService>(provider =>
+        {
+            var kernel = provider.GetRequiredService<Kernel>();
+
+            return kernel.GetRequiredService<ITextToImageService>();
         });
 
         services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());

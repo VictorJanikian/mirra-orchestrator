@@ -38,6 +38,7 @@ namespace Mirra_Orchestrator.Service
 
         private async Task saveWordPressPost(Customer customer, Platform platform, Parameters parameters, CustomerPlatformTableRow configurations)
         {
+            setWordpressAccessConfigurations(configurations);
             List<Content> lastPosts = await getLastsPostsForThis(configurations);
             var blogPost = await generateBlogPost(platform, parameters, lastPosts);
             var postLink = await sendBlogPostToWordpress(configurations, blogPost);
@@ -54,6 +55,11 @@ namespace Mirra_Orchestrator.Service
             await saveContent(content);
         }
 
+        private void setWordpressAccessConfigurations(CustomerPlatformTableRow configurations)
+        {
+            _wordpressIntegration._configuration = configurations;
+        }
+
         private async Task<List<Content>> getLastsPostsForThis(CustomerPlatformTableRow configurations)
         {
             return await _previousContentRecoveryService.getLastContentsFrom(configurations);
@@ -61,12 +67,12 @@ namespace Mirra_Orchestrator.Service
 
         private async Task<Integration.Model.Request.WordpressBlogPost> generateBlogPost(Platform platform, Parameters parameters, List<Content> lastPosts)
         {
-            return await _contentGenerationService.GenerateBlogPost(parameters, platform.SystemPrompt, platform.Prompt, lastPosts);
+            return await _contentGenerationService.GenerateBlogPost(parameters, platform.SystemPrompt, platform.Prompt, lastPosts, _wordpressIntegration);
         }
 
         private async Task<string> sendBlogPostToWordpress(CustomerPlatformTableRow configurations, Integration.Model.Request.WordpressBlogPost blogPost)
         {
-            return await _wordpressIntegration.SendBlogPostToWordpress(blogPost, configurations);
+            return await _wordpressIntegration.SendBlogPostToWordpress(blogPost);
         }
 
         private async Task<string> generateBlogSummary(Platform platform, string blogPost)

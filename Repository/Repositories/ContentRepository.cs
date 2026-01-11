@@ -28,6 +28,8 @@ namespace Mirra_Orchestrator.Repository.Repositories
                    .Contents
                    .AsNoTracking()
                    .Where(content => content.CustomerPlatformConfigurationId == configuration.Id)
+                   .OrderByDescending(content => content.CreatedAt)
+                   .Take(10)
                    .ProjectTo<Content>(_mapper.ConfigurationProvider)
                    .ToListAsync();
         }
