@@ -24,7 +24,7 @@ namespace Mirra_Orchestrator.Service
         public async Task<WordpressBlogPost> GenerateBlogPost(Parameters parameters, string? systemPrompt,
             string prompt, List<Content> lastPosts, IImageRepository imageRepository)
         {
-            var formattedPrompt =
+            var formattedPrompt = await _promptFormatterService.ReplacePromptVariables(prompt, parameters, lastPosts);
             var modelResponse = await _modelCommunicationService.GetTextResponse(systemPrompt, formattedPrompt);
             modelResponse = await includeImages(modelResponse, imageRepository);
             var postRetrievedFromModelResponse = _modelResponseFormatter.GetWordpressBlogPostFromModelResponse(modelResponse.ToString());

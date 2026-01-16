@@ -42,11 +42,11 @@ namespace Mirra_Orchestrator.Service
 
         private string removeBlogPostsCommonErrors(string modelResponse)
         {
-            modelResponse = removeAstherisksFromImageCaptions(modelResponse);
+            modelResponse = removeSpecialCharactersFromImageCaptions(modelResponse);
             return modelResponse;
         }
 
-        private string removeAstherisksFromImageCaptions(string modelResponse)
+        private string removeSpecialCharactersFromImageCaptions(string modelResponse)
         {
             if (string.IsNullOrEmpty(modelResponse))
                 return modelResponse;
@@ -61,10 +61,13 @@ namespace Mirra_Orchestrator.Service
 
                 // Remove asteriscos do início e fim da legenda
                 caption = caption.Trim('*');
+                // Remove underscores do início e fim da legenda
+                caption = caption.Trim('_');
 
                 return $"[IMG: {description} &&& {caption}]";
             });
         }
+
     }
 
 }

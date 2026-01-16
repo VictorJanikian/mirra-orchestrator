@@ -3,6 +3,7 @@
     public class Parameters : Entity
     {
         public string ThemeTitle { get; set; }
+        public string Description { get; set; }
         public string Keywords { get; set; }
         public string TargetAudience { get; set; }
         public string Style { get; set; }
@@ -14,8 +15,8 @@
         public string SEOAdditionalInformation { get; set; }
         public bool? IsDraft { get; set; }
         public string Language { get; set; }
-
         public string CTA { get; set; }
+        public string SearchIntent { get; set; }
 
     }
 }
