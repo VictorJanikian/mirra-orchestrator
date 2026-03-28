@@ -5,6 +5,7 @@ namespace Mirra_Orchestrator.Repository.DbEntities
     [Table("schedulings")]
     public class SchedulingTableRow : EntityTableRow
     {
+        public SchedulingStatusTableRow SchedulingStatus { get; set; }
         public int CustomerPlatformConfigurationId { get; set; }
         public CustomerPlatformConfigurationTableRow CustomerPlatformConfiguration { get; set; }
         public int ParameterId { get; set; }

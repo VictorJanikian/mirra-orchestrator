@@ -5,6 +5,7 @@
         public CustomerPlatformTableRow CustomerPlatformConfiguration { get; set; }
         public Parameters Parameters { get; set; }
         public string Interval { get; set; }
+        public SchedulingStatus SchedulingStatus { get; set; }
 
     }
 }

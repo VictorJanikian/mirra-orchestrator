@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
+using Mirra_Orchestrator.Enums;
+using Mirra_Orchestrator.Model;
 using Mirra_Orchestrator.Repository.Interfaces;
 using Mirra_Orchestrator.Service.Interfaces;
 using NCrontab;
@@ -27,7 +29,7 @@ namespace Mirra_Orchestrator.Service
             {
                 try
                 {
-                    bool shouldRun = ShouldExecuteNow(scheduling.Interval);
+                    bool shouldRun = ShouldExecuteNow(scheduling);
                     if (shouldRun)
                         await _orchestrationService.PostContent(scheduling.CustomerPlatformConfiguration.Customer,
                                                                 scheduling.CustomerPlatformConfiguration.Platform,
@@ -42,8 +44,12 @@ namespace Mirra_Orchestrator.Service
             }
         }
 
-        private bool ShouldExecuteNow(string cronExpression)
+        private bool ShouldExecuteNow(Scheduling scheduling)
         {
+            if (scheduling.SchedulingStatus.Id != (int)ESchedulingStatus.ACTIVE)
+                return false;
+
+            var cronExpression = scheduling.Interval;
             var now = DateTime.UtcNow;
 
             var schedule = CrontabSchedule.Parse(cronExpression);
