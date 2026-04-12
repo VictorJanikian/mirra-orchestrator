@@ -16,7 +16,7 @@ namespace Mirra_Orchestrator.Functions
         }
 
         [Function("MirraScheduler")]
-        public async Task MirraScheduler([TimerTrigger("* * * * *")] TimerInfo timerInfo,
+        public async Task MirraScheduler([TimerTrigger("*/15 * * * *")] TimerInfo timerInfo,
     FunctionContext context)
         {
             _logger.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
