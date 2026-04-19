@@ -11,6 +11,7 @@ namespace Mirra_Orchestrator.Repository.DbEntities
         public int ParameterId { get; set; }
         public ParametersTableRow Parameters { get; set; }
         public string Interval { get; set; }
+        public string Timezone { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 }

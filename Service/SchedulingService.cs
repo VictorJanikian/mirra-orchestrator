@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Mirra_Orchestrator.Enums;
+using Mirra_Orchestrator.Helpers;
 using Mirra_Orchestrator.Model;
 using Mirra_Orchestrator.Repository.Interfaces;
 using Mirra_Orchestrator.Service.Interfaces;
@@ -49,8 +50,9 @@ namespace Mirra_Orchestrator.Service
             if (scheduling.SchedulingStatus.Id != (int)ESchedulingStatus.ACTIVE)
                 return false;
 
-            var cronExpression = scheduling.Interval;
-            var now = DateTime.UtcNow;
+            var cronExpression = CronTimezoneHelper.ConvertUtcToTimezone(scheduling.Interval, scheduling.Timezone);
+            var tz = TimeZoneInfo.FindSystemTimeZoneById(scheduling.Timezone);
+            var now = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, tz);
 
             var schedule = CrontabSchedule.Parse(cronExpression);
 
