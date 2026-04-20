@@ -6,7 +6,7 @@ namespace Mirra_Orchestrator.Service.Interfaces
 {
     public interface IContentGenerationService
     {
-        Task<WordpressBlogPost> GenerateBlogPost(Parameters parameters, string? systemPrompt, string prompt, List<Content> lastPosts, IImageRepository imageRepository);
+        Task<WordpressBlogPost> GenerateBlogPost(Parameters parameters, CustomerPlatformConfiguration platformConfiguration, List<Content> lastPosts, IImageRepository imageRepository);
         Task<string> GenerateBlogPostSummary(string originalPost, string summaryPrompt);
 
     }

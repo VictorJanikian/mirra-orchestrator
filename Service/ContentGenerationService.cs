@@ -21,32 +21,33 @@ namespace Mirra_Orchestrator.Service
             _modelResponseFormatter = modelResponseFormatter;
         }
 
-        public async Task<WordpressBlogPost> GenerateBlogPost(Parameters parameters, string? systemPrompt,
-            string prompt, List<Content> lastPosts, IImageRepository imageRepository)
+        public async Task<WordpressBlogPost> GenerateBlogPost(Parameters parameters, CustomerPlatformConfiguration platformConfiguration, List<Content> lastPosts, IImageRepository imageRepository)
         {
+            var prompt = platformConfiguration.Platform.Prompt;
+            var systemPrompt = platformConfiguration.Platform.SystemPrompt;
             var formattedPrompt = await _promptFormatterService.ReplacePromptVariables(prompt, parameters, lastPosts);
             var modelResponse = await _modelCommunicationService.GetTextResponse(systemPrompt, formattedPrompt);
-            modelResponse = await includeImages(modelResponse, imageRepository);
+            modelResponse = await includeImages(platformConfiguration, modelResponse, imageRepository);
             var postRetrievedFromModelResponse = _modelResponseFormatter.GetWordpressBlogPostFromModelResponse(modelResponse.ToString());
             return postRetrievedFromModelResponse;
 
         }
 
-        private async Task<string> includeImages(string modelResponse, IImageRepository imageRepository)
+        private async Task<string> includeImages(CustomerPlatformConfiguration platformConfiguration, string modelResponse, IImageRepository imageRepository)
         {
             var imagesAttributes = recoverListOfImagesToBeGenerated(modelResponse);
             foreach (var imageAttributes in imagesAttributes)
             {
                 byte[] image = await generateImage(imageAttributes);
-                await saveImage(imageRepository, imageAttributes, image);
+                await saveImage(imageRepository, imageAttributes, image, platformConfiguration);
             }
             return await _modelResponseFormatter.replaceImageMarkupsByImageLinks(modelResponse, imagesAttributes);
 
         }
 
-        private async Task saveImage(IImageRepository imageRepository, ImageInsideContent imageAttributes, byte[] image)
+        private async Task saveImage(IImageRepository imageRepository, ImageInsideContent imageAttributes, byte[] image, CustomerPlatformConfiguration platformConfiguration)
         {
-            imageAttributes.ImageUrl = await imageRepository.SaveImage(image);
+            imageAttributes.ImageUrl = await imageRepository.SaveImage(platformConfiguration.Url, platformConfiguration.Username, platformConfiguration.Password, image);
         }
 
         private async Task<byte[]> generateImage(ImageInsideContent imageAttributes)

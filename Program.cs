@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.TextToImage;
+using Mirra_Orchestrator.Helpers;
 using Mirra_Orchestrator.Integration;
 using Mirra_Orchestrator.Integration.Interfaces;
 using Mirra_Orchestrator.Repository;
@@ -61,6 +62,8 @@ var host = new HostBuilder()
         services.AddScoped<IWordpressIntegration, WordpressIntegration>();
         services.AddScoped<IOpenAIIntegration, OpenAIIntegration>();
         services.AddScoped<IRestClient, RestClient>();
+
+        services.AddScoped<SymmetricEncryptionHelper>();
 
         services.AddSingleton<Kernel>(provider =>
         {

@@ -8,7 +8,7 @@ namespace Mirra_Orchestrator.Repository.Mapper
     {
         public CustomerPlatformTableRowProfile()
         {
-            CreateMap<CustomerPlatformConfigurationTableRow, CustomerPlatformTableRow>();
+            CreateMap<CustomerPlatformConfigurationTableRow, CustomerPlatformConfiguration>();
         }
     }
 }

@@ -24,23 +24,22 @@ namespace Mirra_Orchestrator.Service
             _previousContentRecoveryService = previousContentRecoveryService;
         }
 
-        public async Task PostContent(Customer customer, Platform platform, Parameters parameters)
+        public async Task PostContent(Scheduling schedule, Customer customer, Platform platform, Parameters parameters)
         {
-            var configurations = getPlatformConfiguration(customer, platform);
 
             switch ((Enums.Platform)platform.Id)
             {
                 case Enums.Platform.WORDPRESS:
-                    await saveWordPressPost(customer, platform, parameters, configurations);
+                    await saveWordPressPost(customer, platform, parameters, schedule.CustomerPlatformConfiguration);
                     break;
             }
         }
 
-        private async Task saveWordPressPost(Customer customer, Platform platform, Parameters parameters, CustomerPlatformTableRow configurations)
+
+        private async Task saveWordPressPost(Customer customer, Platform platform, Parameters parameters, CustomerPlatformConfiguration configurations)
         {
-            setWordpressAccessConfigurations(configurations);
             List<Content> lastPosts = await getLastsPostsForThis(configurations);
-            var blogPost = await generateBlogPost(platform, parameters, lastPosts);
+            var blogPost = await generateBlogPost(configurations, parameters, lastPosts);
             var postLink = await sendBlogPostToWordpress(configurations, blogPost);
             var summary = await generateBlogSummary(platform, blogPost.ToString());
             var content = new Content()
@@ -55,24 +54,20 @@ namespace Mirra_Orchestrator.Service
             await saveContent(content);
         }
 
-        private void setWordpressAccessConfigurations(CustomerPlatformTableRow configurations)
-        {
-            _wordpressIntegration._configuration = configurations;
-        }
 
-        private async Task<List<Content>> getLastsPostsForThis(CustomerPlatformTableRow configurations)
+        private async Task<List<Content>> getLastsPostsForThis(CustomerPlatformConfiguration configurations)
         {
             return await _previousContentRecoveryService.getLastContentsFrom(configurations);
         }
 
-        private async Task<Integration.Model.Request.WordpressBlogPost> generateBlogPost(Platform platform, Parameters parameters, List<Content> lastPosts)
+        private async Task<Integration.Model.Request.WordpressBlogPost> generateBlogPost(CustomerPlatformConfiguration configuration, Parameters parameters, List<Content> lastPosts)
         {
-            return await _contentGenerationService.GenerateBlogPost(parameters, platform.SystemPrompt, platform.Prompt, lastPosts, _wordpressIntegration);
+            return await _contentGenerationService.GenerateBlogPost(parameters, configuration, lastPosts, _wordpressIntegration);
         }
 
-        private async Task<string> sendBlogPostToWordpress(CustomerPlatformTableRow configurations, Integration.Model.Request.WordpressBlogPost blogPost)
+        private async Task<string> sendBlogPostToWordpress(CustomerPlatformConfiguration configurations, Integration.Model.Request.WordpressBlogPost blogPost)
         {
-            return await _wordpressIntegration.SendBlogPostToWordpress(blogPost);
+            return await _wordpressIntegration.SendBlogPostToWordpress(configurations, blogPost);
         }
 
         private async Task<string> generateBlogSummary(Platform platform, string blogPost)
@@ -80,21 +75,6 @@ namespace Mirra_Orchestrator.Service
             return await _contentGenerationService.GenerateBlogPostSummary(blogPost, platform.SummaryPrompt);
         }
 
-        private CustomerPlatformTableRow getPlatformConfiguration(Customer customer, Platform platform)
-        {
-            var customerPlatform = customer
-                .CustomerPlatforms
-                .Where(type => type.Platform.Id == (int)(Enums.Platform)platform.Id)
-                .FirstOrDefault();
-
-            if (customerPlatform != null)
-            {
-                customerPlatform.Customer = customer;
-                customerPlatform.Platform = platform;
-            }
-
-            return customerPlatform;
-        }
 
         private async Task saveContent(Content content)
         {

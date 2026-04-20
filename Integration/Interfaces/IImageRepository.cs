@@ -2,6 +2,6 @@
 {
     public interface IImageRepository
     {
-        public Task<string> SaveImage(byte[] image);
+        public Task<string> SaveImage(string url, string username, string password, byte[] image);
     }
 }

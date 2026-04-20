@@ -22,7 +22,7 @@ namespace Mirra_Orchestrator.Repository.Repositories
             return content;
         }
 
-        public async Task<List<Content>> GetByCustomerAndPlatformConfiguration(CustomerPlatformTableRow configuration)
+        public async Task<List<Content>> GetByCustomerAndPlatformConfiguration(CustomerPlatformConfiguration configuration)
         {
             return await _context
                    .Contents

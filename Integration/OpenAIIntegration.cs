@@ -30,6 +30,7 @@ namespace Mirra_Orchestrator.Integration
 
             GeneratedImage image = await client.GenerateImageAsync(prompt, options);
             return image.ImageBytes.ToArray();
+
         }
     }
 }

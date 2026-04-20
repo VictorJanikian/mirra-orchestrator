@@ -1,5 +1,6 @@
 ﻿using Mirra_Orchestrator.Enums;
 using Mirra_Orchestrator.Exception;
+using Mirra_Orchestrator.Helpers;
 using Mirra_Orchestrator.Integration.Interfaces;
 using Mirra_Orchestrator.Integration.Model.Request;
 using Mirra_Orchestrator.Model;
@@ -10,23 +11,23 @@ namespace Mirra_Orchestrator.Integration
     class WordpressIntegration : IWordpressIntegration
     {
         private readonly IRestClient _restClient;
+        private readonly SymmetricEncryptionHelper _symmetricEncryptionHelper;
 
-        public CustomerPlatformTableRow _configuration { get; set; }
-
-        public WordpressIntegration(IRestClient restClient)
+        public WordpressIntegration(IRestClient restClient, SymmetricEncryptionHelper symmetricEncryptionHelper)
         {
             _restClient = restClient;
+            _symmetricEncryptionHelper = symmetricEncryptionHelper;
         }
 
-        public async Task<string> SendBlogPostToWordpress(WordpressBlogPost blogPost)
+        public async Task<string> SendBlogPostToWordpress(CustomerPlatformConfiguration platformConfiguration, WordpressBlogPost blogPost)
         {
             var authenticationParameters = new Dictionary<BasicAuthenticationParameter, string>()
             {
-                {BasicAuthenticationParameter.USERNAME, _configuration.Username },
-                {BasicAuthenticationParameter.PASSWORD, _configuration.Password }
+                {BasicAuthenticationParameter.USERNAME, platformConfiguration.Username },
+                {BasicAuthenticationParameter.PASSWORD, _symmetricEncryptionHelper.Decrypt(platformConfiguration.Password) }
             };
 
-            using var wordpressResponse = await _restClient.post(_configuration.Url + "/wp/v2/posts", GetJSONFor(blogPost), authenticationParameters);
+            using var wordpressResponse = await _restClient.post(platformConfiguration.Url + "/wp/v2/posts", GetJSONFor(blogPost), authenticationParameters);
 
             return await getPostLinkFromResponse(wordpressResponse);
 
@@ -46,15 +47,15 @@ namespace Mirra_Orchestrator.Integration
         }
 
 
-        public async Task<string> SaveImage(byte[] image)
+        public async Task<string> SaveImage(string url, string username, string password, byte[] image)
         {
             var authenticationParameters = new Dictionary<BasicAuthenticationParameter, string>()
             {
-                {BasicAuthenticationParameter.USERNAME, _configuration.Username },
-                {BasicAuthenticationParameter.PASSWORD, _configuration.Password }
+                {BasicAuthenticationParameter.USERNAME, username },
+                {BasicAuthenticationParameter.PASSWORD, _symmetricEncryptionHelper.Decrypt(password) }
             };
 
-            var endpoint = $"{_configuration.Url.TrimEnd('/')}/wp/v2/media";
+            var endpoint = $"{url.TrimEnd('/')}/wp/v2/media";
 
             using var content = new ByteArrayContent(image);
 
@@ -64,9 +65,10 @@ namespace Mirra_Orchestrator.Integration
                 FileName = $"image_{DateTime.UtcNow:yyyyMMddHHmmss}.jpg"
             };
 
-            using var wordpressResponse = await _restClient.post(endpoint, content, authenticationParameters);
 
+            using var wordpressResponse = await _restClient.post(endpoint, content, authenticationParameters);
             return await getMediaUrlFromResponse(wordpressResponse);
+
         }
 
         private async Task<string> getMediaUrlFromResponse(HttpResponseMessage response)

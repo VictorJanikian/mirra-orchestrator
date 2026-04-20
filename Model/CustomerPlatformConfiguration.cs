@@ -1,6 +1,6 @@
 ﻿namespace Mirra_Orchestrator.Model
 {
-    public class CustomerPlatformTableRow : Entity
+    public class CustomerPlatformConfiguration : Entity
     {
         public Customer Customer { get; set; }
         public Platform Platform { get; set; }
