@@ -33,6 +33,18 @@ namespace Mirra_Orchestrator.Service
 
         }
 
+        public async Task<InstagramPost> GenerateInstagramPost(Parameters parameters, CustomerPlatformConfiguration platformConfiguration, List<Content> lastPosts, IImageRepository imageHosting)
+        {
+            var prompt = platformConfiguration.Platform.Prompt;
+            var systemPrompt = platformConfiguration.Platform.SystemPrompt;
+            var formattedPrompt = await _promptFormatterService.ReplacePromptVariables(prompt, parameters, lastPosts);
+            var modelResponse = await _modelCommunicationService.GetTextResponse(systemPrompt, formattedPrompt);
+            var parsed = _modelResponseFormatter.GetInstagramModelParseResultFromModelResponse(modelResponse);
+            var imageBytes = await _modelCommunicationService.GetImageResponse(parsed.ImageDescription);
+            var imageUrl = await imageHosting.SaveImage(string.Empty, string.Empty, string.Empty, imageBytes);
+            return new InstagramPost(imageUrl, parsed.Caption);
+        }
+
         private async Task<string> includeImages(CustomerPlatformConfiguration platformConfiguration, string modelResponse, IImageRepository imageRepository)
         {
             var imagesAttributes = recoverListOfImagesToBeGenerated(modelResponse);

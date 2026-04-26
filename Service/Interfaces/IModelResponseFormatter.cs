@@ -6,6 +6,7 @@ namespace Mirra_Orchestrator.Service.Interfaces
     public interface IModelResponseFormatter
     {
         public WordpressBlogPost GetWordpressBlogPostFromModelResponse(string modelResponse);
+        InstagramModelParseResult GetInstagramModelParseResultFromModelResponse(string modelResponse);
         Task<string> replaceImageMarkupsByImageLinks(string modelResponse, List<ImageInsideContent> imageAttributes);
 
     }

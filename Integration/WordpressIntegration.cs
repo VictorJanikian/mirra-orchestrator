@@ -21,6 +21,9 @@ namespace Mirra_Orchestrator.Integration
 
         public async Task<string> SendBlogPostToWordpress(CustomerPlatformConfiguration platformConfiguration, WordpressBlogPost blogPost)
         {
+            if (string.IsNullOrWhiteSpace(platformConfiguration.Url) || string.IsNullOrEmpty(platformConfiguration.Username) || string.IsNullOrEmpty(platformConfiguration.Password))
+                throw new WordpressException("WordPress configuration requires Url, Username, and Password.");
+
             var authenticationParameters = new Dictionary<BasicAuthenticationParameter, string>()
             {
                 {BasicAuthenticationParameter.USERNAME, platformConfiguration.Username },
@@ -49,6 +52,9 @@ namespace Mirra_Orchestrator.Integration
 
         public async Task<string> SaveImage(string url, string username, string password, byte[] image)
         {
+            if (string.IsNullOrWhiteSpace(url) || string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+                throw new WordpressException("SaveImage requires url, username, and application password for WordPress media upload.");
+
             var authenticationParameters = new Dictionary<BasicAuthenticationParameter, string>()
             {
                 {BasicAuthenticationParameter.USERNAME, username },

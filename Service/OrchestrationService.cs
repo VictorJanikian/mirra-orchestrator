@@ -1,4 +1,5 @@
-﻿using Mirra_Orchestrator.Integration.Interfaces;
+﻿using Mirra_Orchestrator.Integration;
+using Mirra_Orchestrator.Integration.Interfaces;
 using Mirra_Orchestrator.Model;
 using Mirra_Orchestrator.Repository.Interfaces;
 using Mirra_Orchestrator.Service.Interfaces;
@@ -10,15 +11,21 @@ namespace Mirra_Orchestrator.Service
     {
 
         IWordpressIntegration _wordpressIntegration;
+        IInstagramIntegration _instagramIntegration;
+        AzureBlobImageHosting _azureBlobImageHosting;
         IContentGenerationService _contentGenerationService;
         IContentRepository _contentRepository;
         IPreviousContentRecoveryService _previousContentRecoveryService;
         public OrchestrationService(IWordpressIntegration wordpressIntegration,
+            IInstagramIntegration instagramIntegration,
+            AzureBlobImageHosting azureBlobImageHosting,
             IContentGenerationService contentGenerationService,
             IContentRepository contentRepository,
             IPreviousContentRecoveryService previousContentRecoveryService)
         {
             _wordpressIntegration = wordpressIntegration;
+            _instagramIntegration = instagramIntegration;
+            _azureBlobImageHosting = azureBlobImageHosting;
             _contentGenerationService = contentGenerationService;
             _contentRepository = contentRepository;
             _previousContentRecoveryService = previousContentRecoveryService;
@@ -31,6 +38,9 @@ namespace Mirra_Orchestrator.Service
             {
                 case Enums.Platform.WORDPRESS:
                     await saveWordPressPost(customer, platform, parameters, schedule.CustomerPlatformConfiguration);
+                    break;
+                case Enums.Platform.INSTAGRAM:
+                    await saveInstagramPost(customer, platform, parameters, schedule.CustomerPlatformConfiguration);
                     break;
             }
         }
@@ -54,6 +64,30 @@ namespace Mirra_Orchestrator.Service
             await saveContent(content);
         }
 
+        private async Task saveInstagramPost(Customer customer, Platform platform, Parameters parameters, CustomerPlatformConfiguration configurations)
+        {
+            List<Content> lastPosts = await getLastsPostsForThis(configurations);
+            var post = await _contentGenerationService.GenerateInstagramPost(parameters, configurations, lastPosts, _azureBlobImageHosting);
+            var mediaId = await _instagramIntegration.PublishPhotoPost(configurations, post);
+            var summary = await generateBlogSummary(platform, post.Caption);
+            var content = new Content()
+            {
+                ContentTitle = InstagramContentTitleFromCaption(post.Caption),
+                ContentUrl = mediaId,
+                ContentSummary = summary,
+                CustomerPlatformConfiguration = configurations,
+                Parameters = parameters
+            };
+            await saveContent(content);
+        }
+
+        private static string InstagramContentTitleFromCaption(string caption)
+        {
+            if (string.IsNullOrWhiteSpace(caption)) return "(Instagram post)";
+            var firstLine = caption.Split(['\n', '\r'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .FirstOrDefault() ?? caption.Trim();
+            return firstLine.Length > 200 ? firstLine[..200] : firstLine;
+        }
 
         private async Task<List<Content>> getLastsPostsForThis(CustomerPlatformConfiguration configurations)
         {

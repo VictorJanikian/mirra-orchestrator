@@ -60,6 +60,8 @@ var host = new HostBuilder()
         services.AddScoped<IModelResponseFormatter, ModelResponseFormatter>();
 
         services.AddScoped<IWordpressIntegration, WordpressIntegration>();
+        services.AddScoped<IInstagramIntegration, InstagramIntegration>();
+        services.AddScoped<AzureBlobImageHosting>();
         services.AddScoped<IOpenAIIntegration, OpenAIIntegration>();
         services.AddScoped<IRestClient, RestClient>();
 
@@ -100,6 +102,14 @@ var host = new HostBuilder()
 
         services.AddHttpClient("wordpress", client =>
         {
+            client.DefaultRequestHeaders
+                  .Accept
+                  .Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        });
+
+        services.AddHttpClient("instagram", client =>
+        {
+            client.BaseAddress = new Uri("https://graph.facebook.com/v22.0/");
             client.DefaultRequestHeaders
                   .Accept
                   .Add(new MediaTypeWithQualityHeaderValue("application/json"));
