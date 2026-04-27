@@ -2,7 +2,9 @@ namespace Mirra_Orchestrator.Helpers
 {
     public static class CronTimezoneHelper
     {
-        public static string ConvertUtcToTimezone(string cronExpression, string timeZoneId)
+        private const int ReferenceYear = 2024;
+
+        public static string ConvertCronToLocal(string utcCronExpression, string timeZoneId)
         {
             if (string.IsNullOrWhiteSpace(timeZoneId))
                 throw new ArgumentException("Timezone is required.");
@@ -18,9 +20,9 @@ namespace Mirra_Orchestrator.Helpers
             }
 
             var offset = tz.BaseUtcOffset;
-            if (offset == TimeSpan.Zero) return cronExpression;
+            if (offset == TimeSpan.Zero) return utcCronExpression;
 
-            var fields = cronExpression.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            var fields = utcCronExpression.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             if (fields.Length != 5)
                 throw new ArgumentException("Cron expression must have 5 fields.");
 
@@ -42,51 +44,15 @@ namespace Mirra_Orchestrator.Helpers
 
             string dayOfWeekField = fields[4];
             string dayOfMonthField = fields[2];
+            string monthField = fields[3];
 
             if (consistentDayShift.HasValue && consistentDayShift.Value != 0)
             {
-                dayOfWeekField = calculateLocalDayOfWeek(consistentDayShift, dayOfWeekField);
-
-                dayOfMonthField = calculateLocalDayOfMonth(consistentDayShift, dayOfMonthField);
+                dayOfWeekField = calculateLocalDayOfWeek(consistentDayShift.Value, dayOfWeekField);
+                (dayOfMonthField, monthField) = calculateLocalDayAndMonth(consistentDayShift.Value, dayOfMonthField, monthField);
             }
 
-            return $"{localMinute} {localHourField} {dayOfMonthField} {fields[3]} {dayOfWeekField}";
-        }
-
-        private static string calculateLocalDayOfMonth(int? consistentDayShift, string dayOfMonthField)
-        {
-            if (dayOfMonthField != "*" && dayOfMonthField != "?")
-            {
-                var utcDays = ExpandField(dayOfMonthField, 1, 31);
-                var localDays = new SortedSet<int>();
-                foreach (int day in utcDays)
-                {
-                    int shifted = day + consistentDayShift.Value;
-                    if (shifted < 1) shifted += 31;
-                    if (shifted > 31) shifted -= 31;
-                    localDays.Add(shifted);
-                }
-                dayOfMonthField = CompressField(localDays.ToList());
-            }
-
-            return dayOfMonthField;
-        }
-
-        private static string calculateLocalDayOfWeek(int? consistentDayShift, string dayOfWeekField)
-        {
-            if (dayOfWeekField != "*" && dayOfWeekField != "?")
-            {
-                var utcDays = ExpandField(dayOfWeekField, 0, 6);
-                var localDays = new SortedSet<int>();
-                foreach (int day in utcDays)
-                {
-                    int shifted = (day + consistentDayShift.Value % 7 + 7) % 7;
-                    localDays.Add(shifted);
-                }
-                dayOfWeekField = CompressField(localDays.ToList());
-            }
-
-            return dayOfWeekField;
+            return $"{localMinute} {localHourField} {dayOfMonthField} {monthField} {dayOfWeekField}";
         }
 
         private static int calculateLocalMinutesAndHours(int utcMinute, int offsetTotalMinutes, SortedSet<int> localHours, ref int? consistentDayShift, int utcHour)
@@ -105,7 +71,60 @@ namespace Mirra_Orchestrator.Helpers
             else if (consistentDayShift != dayShift)
                 throw new ArgumentException(
                     "The combination of this cron expression and timezone results in a day boundary split that cannot be represented as a single local cron expression. Please simplify the hour field.");
+
             return localMinute;
+        }
+
+        private static string calculateLocalDayOfWeek(int dayShift, string dayOfWeekField)
+        {
+            if (dayOfWeekField == "*" || dayOfWeekField == "?") return dayOfWeekField;
+
+            var utcDays = ExpandField(dayOfWeekField, 0, 6);
+            var localDays = new SortedSet<int>();
+            foreach (int day in utcDays)
+            {
+                int shifted = ((day + dayShift) % 7 + 7) % 7;
+                localDays.Add(shifted);
+            }
+            return CompressField(localDays.ToList());
+        }
+
+        private static (string dayOfMonth, string month) calculateLocalDayAndMonth(int dayShift, string dayOfMonthField, string monthField)
+        {
+            bool dayIsWildcard = dayOfMonthField == "*" || dayOfMonthField == "?";
+            bool monthIsWildcard = monthField == "*" || monthField == "?";
+
+            if (dayIsWildcard) return (dayOfMonthField, monthField);
+
+            var utcMonths = monthIsWildcard
+                ? new SortedSet<int>(Enumerable.Range(1, 12))
+                : ExpandField(monthField, 1, 12);
+            var utcDays = ExpandField(dayOfMonthField, 1, 31);
+
+            var localPairs = new HashSet<(int month, int day)>();
+
+            foreach (int month in utcMonths)
+            {
+                int daysInMonth = DateTime.DaysInMonth(ReferenceYear, month);
+                foreach (int day in utcDays)
+                {
+                    if (day > daysInMonth) continue;
+                    var shifted = new DateTime(ReferenceYear, month, day).AddDays(dayShift);
+                    localPairs.Add((shifted.Month, shifted.Day));
+                }
+            }
+
+            var localMonths = localPairs.Select(p => p.month).Distinct().OrderBy(m => m).ToList();
+            var localDays = localPairs.Select(p => p.day).Distinct().OrderBy(d => d).ToList();
+
+            if (localMonths.Count * localDays.Count != localPairs.Count)
+                throw new ArgumentException(
+                    "The combination of this cron expression and timezone results in a day/month split that cannot be represented as a single local cron expression. Please simplify the day or month field.");
+
+            string finalMonthField = monthIsWildcard && localMonths.Count == 12 ? "*" : CompressField(localMonths);
+            string finalDayField = CompressField(localDays);
+
+            return (finalDayField, finalMonthField);
         }
 
         private static SortedSet<int> ExpandField(string field, int min, int max)
