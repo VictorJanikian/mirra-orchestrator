@@ -30,18 +30,18 @@ namespace Mirra_Orchestrator.Service
             switch ((Enums.Platform)platform.Id)
             {
                 case Enums.Platform.WORDPRESS:
-                    await saveWordPressPost(customer, platform, parameters, schedule.CustomerPlatformConfiguration);
+                    await saveWordPressPost(schedule, customer, platform, parameters, schedule.CustomerPlatformConfiguration);
                     break;
             }
         }
 
 
-        private async Task saveWordPressPost(Customer customer, Platform platform, Parameters parameters, CustomerPlatformConfiguration configurations)
+        private async Task saveWordPressPost(Scheduling schedule, Customer customer, Platform platform, Parameters parameters, CustomerPlatformConfiguration configurations)
         {
             List<Content> lastPosts = await getLastsPostsForThis(configurations);
-            var blogPost = await generateBlogPost(configurations, parameters, lastPosts);
+            var blogPost = await generateBlogPost(schedule, configurations, parameters, lastPosts);
             var postLink = await sendBlogPostToWordpress(configurations, blogPost);
-            var summary = await generateBlogSummary(platform, blogPost.ToString());
+            var summary = await generateBlogSummary(schedule, platform, blogPost.ToString());
             var content = new Content()
             {
                 ContentTitle = RemoveHtmlTags(blogPost.title),
@@ -60,9 +60,9 @@ namespace Mirra_Orchestrator.Service
             return await _previousContentRecoveryService.getLastContentsFrom(configurations);
         }
 
-        private async Task<Integration.Model.Request.WordpressBlogPost> generateBlogPost(CustomerPlatformConfiguration configuration, Parameters parameters, List<Content> lastPosts)
+        private async Task<Integration.Model.Request.WordpressBlogPost> generateBlogPost(Scheduling schedule, CustomerPlatformConfiguration configuration, Parameters parameters, List<Content> lastPosts)
         {
-            return await _contentGenerationService.GenerateBlogPost(parameters, configuration, lastPosts, _wordpressIntegration);
+            return await _contentGenerationService.GenerateBlogPost(schedule.Id, parameters, configuration, lastPosts, _wordpressIntegration);
         }
 
         private async Task<string> sendBlogPostToWordpress(CustomerPlatformConfiguration configurations, Integration.Model.Request.WordpressBlogPost blogPost)
@@ -70,9 +70,9 @@ namespace Mirra_Orchestrator.Service
             return await _wordpressIntegration.SendBlogPostToWordpress(configurations, blogPost);
         }
 
-        private async Task<string> generateBlogSummary(Platform platform, string blogPost)
+        private async Task<string> generateBlogSummary(Scheduling schedule, Platform platform, string blogPost)
         {
-            return await _contentGenerationService.GenerateBlogPostSummary(blogPost, platform.SummaryPrompt);
+            return await _contentGenerationService.GenerateBlogPostSummary(schedule.Id, blogPost, platform.SummaryPrompt);
         }
 
 

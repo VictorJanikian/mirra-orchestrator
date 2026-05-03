@@ -50,6 +50,7 @@ var host = new HostBuilder()
 
         services.AddScoped<ISchedulingRepository, SchedulingRepository>();
         services.AddScoped<IContentRepository, ContentRepository>();
+        services.AddScoped<IModelConversationHistoryRepository, ModelConversationHistoryRepository>();
 
         services.AddScoped<ISchedulingService, SchedulingService>();
         services.AddScoped<IOrchestrationService, OrchestrationService>();

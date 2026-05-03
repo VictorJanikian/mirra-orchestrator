@@ -51,7 +51,7 @@ namespace Mirra_Orchestrator.Service
             if (scheduling.SchedulingStatus.Id != (int)ESchedulingStatus.ACTIVE)
                 return false;
 
-            var cronExpression = CronTimezoneHelper.ConvertUtcToTimezone(scheduling.Interval, scheduling.Timezone);
+            var cronExpression = CronTimezoneHelper.ConvertCronToLocal(scheduling.Interval, scheduling.Timezone);
             var tz = TimeZoneInfo.FindSystemTimeZoneById(scheduling.Timezone);
             var now = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, tz);
 

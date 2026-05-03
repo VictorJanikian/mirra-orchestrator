@@ -21,12 +21,13 @@ namespace Mirra_Orchestrator.Service
             _modelResponseFormatter = modelResponseFormatter;
         }
 
-        public async Task<WordpressBlogPost> GenerateBlogPost(Parameters parameters, CustomerPlatformConfiguration platformConfiguration, List<Content> lastPosts, IImageRepository imageRepository)
+        public async Task<WordpressBlogPost> GenerateBlogPost(int schedulingId, Parameters parameters, CustomerPlatformConfiguration platformConfiguration, List<Content> lastPosts, IImageRepository imageRepository)
         {
             var prompt = platformConfiguration.Platform.Prompt;
             var systemPrompt = platformConfiguration.Platform.SystemPrompt;
             var formattedPrompt = await _promptFormatterService.ReplacePromptVariables(prompt, parameters, lastPosts);
-            var modelResponse = await _modelCommunicationService.GetTextResponse(systemPrompt, formattedPrompt);
+            ConversationMetadata metadata = new ConversationMetadata { SchedulingId = schedulingId };
+            var modelResponse = await _modelCommunicationService.GetTextResponse(systemPrompt, formattedPrompt, metadata);
             modelResponse = await includeImages(platformConfiguration, modelResponse, imageRepository);
             var postRetrievedFromModelResponse = _modelResponseFormatter.GetWordpressBlogPostFromModelResponse(modelResponse.ToString());
             return postRetrievedFromModelResponse;
@@ -93,10 +94,11 @@ namespace Mirra_Orchestrator.Service
             return Regex.Matches(modelResponse, pattern);
         }
 
-        public async Task<string> GenerateBlogPostSummary(string originalPost, string summaryPrompt)
+        public async Task<string> GenerateBlogPostSummary(int schedulingId, string originalPost, string summaryPrompt)
         {
             var formattedPrompt = await _promptFormatterService.ReplaceTextInsidePrompt(summaryPrompt, originalPost);
-            var modelResponse = await _modelCommunicationService.GetTextResponse(string.Empty, formattedPrompt);
+            ConversationMetadata metadata = new ConversationMetadata { SchedulingId = schedulingId };
+            var modelResponse = await _modelCommunicationService.GetTextResponse(string.Empty, formattedPrompt, metadata);
             return modelResponse.ToString();
         }
     }
