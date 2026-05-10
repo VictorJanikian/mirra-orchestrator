@@ -97,7 +97,7 @@ var host = new HostBuilder()
             return kernel.GetRequiredService<ITextToImageService>();
         });
 
-        services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+        services.AddAutoMapper(cfg => cfg.AddMaps(AppDomain.CurrentDomain.GetAssemblies()));
 
         services.AddHttpClient("wordpress", client =>
         {

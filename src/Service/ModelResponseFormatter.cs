@@ -12,7 +12,7 @@ namespace Mirra_Orchestrator.Service
             int divisorIndex = modelResponse.IndexOf("---");
             var postTitle = modelResponse.Substring(0, divisorIndex);
             var postContent = modelResponse.Substring(divisorIndex + 3);
-            modelResponse = removeBlogPostsCommonErrors(modelResponse);
+            postContent = removeBlogPostsCommonErrors(postContent);
             WordpressBlogPost wordpressBlogPost = new(postTitle, postContent);
             return wordpressBlogPost;
         }
@@ -46,7 +46,7 @@ namespace Mirra_Orchestrator.Service
             return modelResponse;
         }
 
-        private string removeSpecialCharactersFromImageCaptions(string modelResponse)
+        internal string removeSpecialCharactersFromImageCaptions(string modelResponse)
         {
             if (string.IsNullOrEmpty(modelResponse))
                 return modelResponse;

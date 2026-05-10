@@ -6,12 +6,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Mirra Orchestrator is an Azure Functions (isolated worker, .NET 9) app that generates AI-tuned content (text + images) and publishes it to customer-owned WordPress blogs on a schedule. A single Timer trigger drives everything; there are no HTTP endpoints.
 
+## Repo layout
+
+The main Functions project lives in `src/` (`src/Mirra Orchestrator.csproj`); the test project sits beside it at `Mirra Orchestrator - Tests/`. The `.sln` at the repo root references both. Source paths in this doc are relative to `src/`.
+
 ## Build / Run
 
-- Build: `dotnet build --configuration Release`
-- Run locally (Azure Functions host required): `func start` from the project root after `dotnet build` — `local.settings.json` only sets the runtime to `dotnet-isolated` and dev storage; real secrets come from User Secrets (`<UserSecretsId>cc1d121f-d65c-4b27-88a5-966badb71755`) or environment variables.
-- No test project exists — there is nothing to `dotnet test`.
-- CI/CD: push to `main` triggers `.github/workflows/main_mirra-orchestrator.yml`, which builds and deploys to the `mirra-orchestrator` Azure Function App via OIDC login.
+- Build: `dotnet build --configuration Release` (from repo root, against the .sln) — or scope to the main project: `dotnet build "src/Mirra Orchestrator.csproj" --configuration Release`.
+- Run locally (Azure Functions host required): `func start` from `src/` after `dotnet build` — `local.settings.json` only sets the runtime to `dotnet-isolated` and dev storage; real secrets come from User Secrets (`<UserSecretsId>cc1d121f-d65c-4b27-88a5-966badb71755`) or environment variables.
+- Test project (`Mirra Orchestrator - Tests/`) currently contains a placeholder `Test1` and uses `Microsoft.Testing.Platform` (configured via `global.json`); run with `dotnet test`.
+- CI/CD: push to `main` triggers `.github/workflows/main_mirra-orchestrator.yml`, which builds and deploys to the `mirra-orchestrator` Azure Function App via OIDC login. The workflow's `AZURE_FUNCTIONAPP_PACKAGE_PATH` is `src` — keep it in sync if the project moves.
 
 ## Required configuration keys
 
