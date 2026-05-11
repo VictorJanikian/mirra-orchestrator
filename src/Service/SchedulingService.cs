@@ -57,9 +57,10 @@ namespace Mirra_Orchestrator.Service
 
             var schedule = CrontabSchedule.Parse(cronExpression);
 
-            DateTime nextOccurrence = schedule.GetNextOccurrence(now.AddMinutes(-now.Minute - 1)); // Ignorando os minutos
+            var windowStart = now.AddMinutes(-15);
+            DateTime nextOccurrence = schedule.GetNextOccurrence(windowStart);
 
-            return nextOccurrence.Hour == now.Hour && nextOccurrence.Day == now.Day && nextOccurrence.DayOfWeek == now.DayOfWeek;
+            return nextOccurrence <= now;
         }
     }
 }
