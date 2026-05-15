@@ -4,19 +4,19 @@
     {
         public WordpressBlogPost(string title, string content)
         {
-            this.title = title;
-            this.content = content;
+            this.Title = title;
+            this.Content = content;
         }
 
-        public string title { get; set; }
+        public string Title { get; set; }
 
-        public string content { get; set; }
+        public string Content { get; set; }
 
-        public string status { get; set; } = "publish";
+        public string Status { get; set; } = "publish";
 
         public override string ToString()
         {
-            return "Title: " + title + " Content: " + content;
+            return "Title: " + Title + " Content: " + Content;
         }
     }
 }

@@ -44,7 +44,7 @@ namespace Mirra_Orchestrator.Service
             var summary = await generateBlogSummary(schedule, platform, blogPost.ToString());
             var content = new Content()
             {
-                ContentTitle = RemoveHtmlTags(blogPost.title),
+                ContentTitle = RemoveHtmlTags(blogPost.Title),
                 ContentUrl = postLink,
                 ContentSummary = summary,
                 CustomerPlatformConfiguration = configurations,
