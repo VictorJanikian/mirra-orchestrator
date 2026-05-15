@@ -9,9 +9,9 @@ namespace Mirra_Orchestrator.Service
     {
         public WordpressBlogPost GetWordpressBlogPostFromModelResponse(string modelResponse)
         {
-            int divisorIndex = modelResponse.IndexOf("---");
-            var postTitle = modelResponse.Substring(0, divisorIndex);
-            var postContent = modelResponse.Substring(divisorIndex + 3);
+            var titleMatch = Regex.Match(modelResponse, @"<h1>(.*?)</h1>", RegexOptions.Singleline);
+            var postTitle = titleMatch.Value;
+            var postContent = modelResponse.Substring(titleMatch.Index + titleMatch.Length);
             postContent = removeBlogPostsCommonErrors(postContent);
             WordpressBlogPost wordpressBlogPost = new(postTitle, postContent);
             return wordpressBlogPost;
