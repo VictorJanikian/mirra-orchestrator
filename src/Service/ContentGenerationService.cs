@@ -29,7 +29,7 @@ namespace Mirra_Orchestrator.Service
             ConversationMetadata metadata = new ConversationMetadata { SchedulingId = schedulingId };
             var modelResponse = await _modelCommunicationService.GetTextResponse(systemPrompt, formattedPrompt, metadata);
             var postRetrievedFromModelResponse = _modelResponseFormatter.GetWordpressBlogPostFromModelResponse(modelResponse.ToString());
-            postRetrievedFromModelResponse.Content = await includeImages(platformConfiguration, postRetrievedFromModelResponse.Content, imageRepository);
+            postRetrievedFromModelResponse.content = await includeImages(platformConfiguration, postRetrievedFromModelResponse.content, imageRepository);
             return postRetrievedFromModelResponse;
 
         }
