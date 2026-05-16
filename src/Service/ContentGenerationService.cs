@@ -21,7 +21,7 @@ namespace Mirra_Orchestrator.Service
             _modelResponseFormatter = modelResponseFormatter;
         }
 
-        public async Task<WordpressBlogPost> GenerateBlogPost(int schedulingId, Parameters parameters, CustomerPlatformConfiguration platformConfiguration, List<Content> lastPosts, IImageRepository imageRepository)
+        public async Task<WordpressBlogPostRequest> GenerateBlogPost(int schedulingId, Parameters parameters, CustomerPlatformConfiguration platformConfiguration, List<Content> lastPosts, IImageRepository imageRepository)
         {
             var prompt = platformConfiguration.Platform.Prompt;
             var systemPrompt = platformConfiguration.Platform.SystemPrompt;

@@ -5,7 +5,7 @@ namespace Mirra_Orchestrator.Integration.Interfaces
 {
     public interface IWordpressIntegration : IImageRepository
     {
-        public Task<string> SendBlogPostToWordpress(CustomerPlatformConfiguration platformConfiguration, WordpressBlogPost blogPost);
+        public Task<string> SendBlogPostToWordpress(CustomerPlatformConfiguration platformConfiguration, WordpressBlogPostRequest blogPost);
 
     }
 }

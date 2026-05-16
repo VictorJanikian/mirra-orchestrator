@@ -25,8 +25,8 @@ namespace Mirra_Orchestrator___Tests.Service
 
             var modelResponse = ModelResponseExample.Text;
             var result = modelResponseFormatter.GetWordpressBlogPostFromModelResponse(modelResponse);
-            Assert.AreEqual(ModelResponseExample.Title, result.Title);
-            Assert.AreEqual(ModelResponseExample.FormattedText, result.Content);
+            Assert.AreEqual(ModelResponseExample.Title, result.title);
+            Assert.AreEqual(ModelResponseExample.FormattedText, result.content);
 
         }
     }

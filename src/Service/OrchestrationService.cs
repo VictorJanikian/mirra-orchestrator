@@ -44,7 +44,7 @@ namespace Mirra_Orchestrator.Service
             var summary = await generateBlogSummary(schedule, platform, blogPost.ToString());
             var content = new Content()
             {
-                ContentTitle = RemoveHtmlTags(blogPost.Title),
+                ContentTitle = RemoveHtmlTags(blogPost.title),
                 ContentUrl = postLink,
                 ContentSummary = summary,
                 CustomerPlatformConfiguration = configurations,
@@ -60,12 +60,12 @@ namespace Mirra_Orchestrator.Service
             return await _previousContentRecoveryService.getLastContentsFrom(configurations);
         }
 
-        private async Task<Integration.Model.Request.WordpressBlogPost> generateBlogPost(Scheduling schedule, CustomerPlatformConfiguration configuration, Parameters parameters, List<Content> lastPosts)
+        private async Task<Integration.Model.Request.WordpressBlogPostRequest> generateBlogPost(Scheduling schedule, CustomerPlatformConfiguration configuration, Parameters parameters, List<Content> lastPosts)
         {
             return await _contentGenerationService.GenerateBlogPost(schedule.Id, parameters, configuration, lastPosts, _wordpressIntegration);
         }
 
-        private async Task<string> sendBlogPostToWordpress(CustomerPlatformConfiguration configurations, Integration.Model.Request.WordpressBlogPost blogPost)
+        private async Task<string> sendBlogPostToWordpress(CustomerPlatformConfiguration configurations, Integration.Model.Request.WordpressBlogPostRequest blogPost)
         {
             return await _wordpressIntegration.SendBlogPostToWordpress(configurations, blogPost);
         }

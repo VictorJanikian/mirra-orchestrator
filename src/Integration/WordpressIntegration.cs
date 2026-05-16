@@ -19,7 +19,7 @@ namespace Mirra_Orchestrator.Integration
             _symmetricEncryptionHelper = symmetricEncryptionHelper;
         }
 
-        public async Task<string> SendBlogPostToWordpress(CustomerPlatformConfiguration platformConfiguration, WordpressBlogPost blogPost)
+        public async Task<string> SendBlogPostToWordpress(CustomerPlatformConfiguration platformConfiguration, WordpressBlogPostRequest blogPost)
         {
             var authenticationParameters = new Dictionary<BasicAuthenticationParameter, string>()
             {

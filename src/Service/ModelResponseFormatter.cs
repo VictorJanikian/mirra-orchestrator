@@ -7,13 +7,13 @@ namespace Mirra_Orchestrator.Service
 {
     public class ModelResponseFormatter : IModelResponseFormatter
     {
-        public WordpressBlogPost GetWordpressBlogPostFromModelResponse(string modelResponse)
+        public WordpressBlogPostRequest GetWordpressBlogPostFromModelResponse(string modelResponse)
         {
             var titleMatch = Regex.Match(modelResponse, @"<h1>(.*?)</h1>", RegexOptions.Singleline);
             var postTitle = titleMatch.Value;
             var postContent = modelResponse.Substring(titleMatch.Index + titleMatch.Length);
             postContent = removeBlogPostsCommonErrors(postContent);
-            WordpressBlogPost wordpressBlogPost = new(postTitle, postContent);
+            WordpressBlogPostRequest wordpressBlogPost = new(postTitle, postContent);
             return wordpressBlogPost;
         }
 
