@@ -72,7 +72,7 @@ var host = new HostBuilder()
 
             return Kernel.CreateBuilder()
                 .AddAzureOpenAIChatCompletion(
-                    "gpt-4o",
+                    "gpt-5.4",
                     configuration["AI:AzureOpenAI:Endpoint"],
                     configuration["AI:AzureOpenAI:ApiKey"]
                 )
