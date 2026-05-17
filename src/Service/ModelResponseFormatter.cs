@@ -43,7 +43,22 @@ namespace Mirra_Orchestrator.Service
         private string removeBlogPostsCommonErrors(string modelResponse)
         {
             modelResponse = removeSpecialCharactersFromImageCaptions(modelResponse);
+            modelResponse = removeItalicTagsWrappingEntireParagraphs(modelResponse);
             return modelResponse;
+        }
+
+        internal string removeItalicTagsWrappingEntireParagraphs(string modelResponse)
+        {
+            if (string.IsNullOrEmpty(modelResponse))
+                return modelResponse;
+
+            var pattern = @"<p([^>]*)>\s*<i>([\s\S]*?)</i>\s*</p>";
+            return Regex.Replace(modelResponse, pattern, match =>
+            {
+                var paragraphAttributes = match.Groups[1].Value;
+                var paragraphContent = match.Groups[2].Value;
+                return $"<p{paragraphAttributes}>{paragraphContent}</p>";
+            });
         }
 
         internal string removeSpecialCharactersFromImageCaptions(string modelResponse)
