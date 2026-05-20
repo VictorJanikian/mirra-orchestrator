@@ -78,6 +78,10 @@ namespace Mirra_Orchestrator.Service
                 caption = caption.Trim('*');
                 // Remove underscores do início e fim da legenda
                 caption = caption.Trim('_');
+                // Remove <i> do início
+                caption = Regex.Replace(caption, @"^<i>\s*", "", RegexOptions.IgnoreCase);
+                // Remove </i> do fim
+                caption = Regex.Replace(caption, @"\s*</i>$", "", RegexOptions.IgnoreCase);
 
                 return $"[IMG: {description} &&& {caption}]";
             });
