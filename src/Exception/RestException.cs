@@ -5,7 +5,6 @@
         public RestException()
         {
         }
-
         public RestException(string? message) : base(message)
         {
         }
