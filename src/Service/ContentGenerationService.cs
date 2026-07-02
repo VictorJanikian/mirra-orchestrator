@@ -21,10 +21,10 @@ namespace Mirra_Orchestrator.Service
             _modelResponseFormatter = modelResponseFormatter;
         }
 
-        public async Task<WordpressBlogPostRequest> GenerateBlogPost(int schedulingId, Parameters parameters, CustomerPlatformConfiguration platformConfiguration, List<Content> lastPosts, IImageRepository imageRepository)
+        public async Task<WordpressBlogPostRequest> GenerateBlogPost(int schedulingId, Parameters parameters, CustomerPlatformConfiguration platformConfiguration, ContentType contentType, List<Content> lastPosts, IImageRepository imageRepository)
         {
-            var prompt = platformConfiguration.Platform.Prompt;
-            var systemPrompt = platformConfiguration.Platform.SystemPrompt;
+            var prompt = contentType.Prompt;
+            var systemPrompt = contentType.SystemPrompt;
             var formattedPrompt = await _promptFormatterService.ReplacePromptVariables(prompt, parameters, lastPosts);
             ConversationMetadata metadata = new ConversationMetadata { SchedulingId = schedulingId };
             var modelResponse = await _modelCommunicationService.GetTextResponse(systemPrompt, formattedPrompt, metadata);

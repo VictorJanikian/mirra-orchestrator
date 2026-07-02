@@ -10,6 +10,7 @@ namespace Mirra_Orchestrator.Repository
         }
 
         public DbSet<SchedulingTableRow> Schedulings => Set<SchedulingTableRow>();
+        public DbSet<ContentTypeTableRow> ContentTypes => Set<ContentTypeTableRow>();
         public DbSet<CustomerTableRow> Customers => Set<CustomerTableRow>();
         public DbSet<PlatformTableRow> Platforms => Set<PlatformTableRow>();
         public DbSet<ContentTableRow> Contents => Set<ContentTableRow>();

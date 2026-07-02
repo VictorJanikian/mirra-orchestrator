@@ -6,9 +6,6 @@ namespace Mirra_Orchestrator.Repository.DbEntities
     public class PlatformTableRow : EntityTableRow
     {
         public string Name { get; set; }
-        public string? Prompt { get; set; }
-        public string? SummaryPrompt { get; set; }
-        public string SystemPrompt { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 }

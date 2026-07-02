@@ -4,6 +4,7 @@
     {
         public CustomerPlatformConfiguration CustomerPlatformConfiguration { get; set; }
         public Parameters Parameters { get; set; }
+        public ContentType ContentType { get; set; }
         public string Interval { get; set; }
         public string Timezone { get; set; }
         public SchedulingStatus SchedulingStatus { get; set; }

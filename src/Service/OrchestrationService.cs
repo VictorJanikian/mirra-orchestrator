@@ -41,7 +41,7 @@ namespace Mirra_Orchestrator.Service
             List<Content> lastPosts = await getLastsPostsForThis(configurations);
             var blogPost = await generateBlogPost(schedule, configurations, parameters, lastPosts);
             var postLink = await sendBlogPostToWordpress(configurations, blogPost);
-            var summary = await generateBlogSummary(schedule, platform, blogPost.ToString());
+            var summary = await generateBlogSummary(schedule, blogPost.ToString());
             var content = new Content()
             {
                 ContentTitle = RemoveHtmlTags(blogPost.title),
@@ -62,7 +62,7 @@ namespace Mirra_Orchestrator.Service
 
         private async Task<Integration.Model.Request.WordpressBlogPostRequest> generateBlogPost(Scheduling schedule, CustomerPlatformConfiguration configuration, Parameters parameters, List<Content> lastPosts)
         {
-            return await _contentGenerationService.GenerateBlogPost(schedule.Id, parameters, configuration, lastPosts, _wordpressIntegration);
+            return await _contentGenerationService.GenerateBlogPost(schedule.Id, parameters, configuration, schedule.ContentType, lastPosts, _wordpressIntegration);
         }
 
         private async Task<string> sendBlogPostToWordpress(CustomerPlatformConfiguration configurations, Integration.Model.Request.WordpressBlogPostRequest blogPost)
@@ -70,9 +70,9 @@ namespace Mirra_Orchestrator.Service
             return await _wordpressIntegration.SendBlogPostToWordpress(configurations, blogPost);
         }
 
-        private async Task<string> generateBlogSummary(Scheduling schedule, Platform platform, string blogPost)
+        private async Task<string> generateBlogSummary(Scheduling schedule, string blogPost)
         {
-            return await _contentGenerationService.GenerateBlogPostSummary(schedule.Id, blogPost, platform.SummaryPrompt);
+            return await _contentGenerationService.GenerateBlogPostSummary(schedule.Id, blogPost, schedule.ContentType.SummaryPrompt);
         }
 
 
