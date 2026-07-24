@@ -78,7 +78,7 @@ var host = new HostBuilder()
                 )
                 .AddOpenAITextToImage(
                     configuration["AI:OpenAI:ApiKey"],
-                    modelId: "gpt-image-1-mini"
+                    modelId: "gpt-image-2"
                 )
                 .Build();
         });
