@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Mirra_Orchestrator.Integration.Interfaces;
 using OpenAI.Images;
+using static Mirra_Orchestrator.Helpers.Constants;
 
 namespace Mirra_Orchestrator.Integration
 {
@@ -20,7 +21,7 @@ namespace Mirra_Orchestrator.Integration
 
             var apiKey = _configuration["AI:OpenAI:ApiKey"];
 
-            ImageClient client = new("gpt-image-2", apiKey);
+            ImageClient client = new(BLOG_IMAGE_MODEL, apiKey);
 
             ImageGenerationOptions options = new()
             {

@@ -16,6 +16,7 @@ using Mirra_Orchestrator.Service;
 using Mirra_Orchestrator.Service.Interfaces;
 using System.Diagnostics;
 using System.Net.Http.Headers;
+using static Mirra_Orchestrator.Helpers.Constants;
 
 var host = new HostBuilder()
     .ConfigureFunctionsWebApplication()
@@ -72,13 +73,13 @@ var host = new HostBuilder()
 
             return Kernel.CreateBuilder()
                 .AddAzureOpenAIChatCompletion(
-                    "gpt-5.4",
+                    BLOG_TEXT_MODEL,
                     configuration["AI:AzureOpenAI:Endpoint"],
                     configuration["AI:AzureOpenAI:ApiKey"]
                 )
                 .AddOpenAITextToImage(
                     configuration["AI:OpenAI:ApiKey"],
-                    modelId: "gpt-image-2"
+                    modelId: BLOG_IMAGE_MODEL
                 )
                 .Build();
         });
