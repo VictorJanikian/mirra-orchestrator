@@ -20,7 +20,7 @@ namespace Mirra_Orchestrator.Integration
 
             var apiKey = _configuration["AI:OpenAI:ApiKey"];
 
-            ImageClient client = new("gpt-image-1-mini", apiKey);
+            ImageClient client = new("gpt-image-2", apiKey);
 
             ImageGenerationOptions options = new()
             {
