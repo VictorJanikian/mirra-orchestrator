@@ -4,7 +4,7 @@ namespace Mirra_Orchestrator.Model
 {
     public class InstagramPost
     {
-        [JsonProperty("imageDescription")]
+        [JsonProperty("image_description")]
         public string ImageDescription { get; set; }
 
         [JsonProperty("caption")]
