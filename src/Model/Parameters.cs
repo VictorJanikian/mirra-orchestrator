@@ -17,6 +17,15 @@
         public string Language { get; set; }
         public string CTA { get; set; }
         public string SearchIntent { get; set; }
+        public string VisualHookInstructions { get; set; }
+        public string CaptionInstructions { get; set; }
+        public string ColorPalette { get; set; }
+        public string VisualLayout { get; set; }
+        public string TextOnImage { get; set; }
+        public CaptionSize CaptionSize { get; set; }
+        public string HashtagsStrategy { get; set; }
+        public string AvoidTopics { get; set; }
+        public string ContentTone { get; set; }
 
     }
 }

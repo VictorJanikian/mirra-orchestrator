@@ -24,6 +24,7 @@ Loaded in `Program.cs` via `local.settings.json` → User Secrets → environmen
 - `ConnectionStrings:DefaultConnection` — SQL Server (the context is registered with `UseSqlServer` despite MySQL also being referenced in the csproj).
 - `AI:AzureOpenAI:Endpoint` / `AI:AzureOpenAI:ApiKey` — used for `gpt-4o` chat completion through Semantic Kernel.
 - `AI:OpenAI:ApiKey` — used for `gpt-image-1-mini` image generation (both via Semantic Kernel `AddOpenAITextToImage` and directly via `OpenAIIntegration`).
+- `Storage:AzureBlob:Url` / `Storage:AzureBlob:AccountName` / `Storage:AzureBlob:AccessKey` / `Storage:AzureBlob:ContainerName` — where `AzureBlobIntegration` drops the generated Instagram image (`.png`) and caption (`.txt`) while the Instagram publishing integration doesn't exist yet.
 
 ## Architecture
 
@@ -39,6 +40,10 @@ The pipeline is a linear chain, and the layering is strict — understanding it 
    - `ModelCommunicationService` calls Azure OpenAI chat (via Semantic Kernel `IChatCompletionService`) for text and OpenAI image API (via `OpenAIIntegration`) for images.
    - Images are embedded by scanning the model output for the custom markup `[IMG: description &&& caption]`, generating each image, uploading it via `IImageRepository.SaveImage` (implemented by `WordpressIntegration`, which posts to `/wp/v2/media`), and replacing the markup with a `<figure>` block in `ModelResponseFormatter`.
    - The final response is split on `---` into title/content by `ModelResponseFormatter.GetWordpressBlogPostFromModelResponse` — the model is expected to output `<title>---<content>`.
+### Instagram flow
+
+`OrchestrationService.saveInstagramPost` dispatches on `ContentType.Id` (`Enums/EContentType.cs`): `INSTAGRAM_SINGLE_POST` is implemented, `INSTAGRAM_CARROUSEL_POST` still throws. The single-post pipeline asks the model (prompt stored in the DB) for a JSON with `imageDescription` + `caption`, parses it in `ModelResponseFormatter.GetInstagramPostFromModelResponse` (first `{...}` block wins, so markdown fences are tolerated), feeds `imageDescription` to the image model, and writes both artifacts to Azure Blob under `instagram/{schedulingId}/post_{timestamp}.{png,txt}`. The persisted `Content` row stores the blob image URL in `ContentUrl` and the image description in `ContentSummary`. Nothing is posted to Instagram yet.
+
 5. `Integration/WordpressIntegration.cs` — publishes via REST to `{customerConfig.Url}/wp/v2/posts` using HTTP Basic auth pulled from `CustomerPlatformTableRow`. **Note**: `_configuration` is a mutable public property set per call from `OrchestrationService.setWordpressAccessConfigurations`, so this service is not safe to reuse across concurrent customers in the same scope.
 
 ### Data layer

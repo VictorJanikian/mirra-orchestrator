@@ -39,7 +39,7 @@ namespace Mirra_Orchestrator.Service
             var imagesAttributes = recoverListOfImagesToBeGenerated(modelResponse);
             foreach (var imageAttributes in imagesAttributes)
             {
-                byte[] image = await generateImage(imageAttributes);
+                byte[] image = await generateImage(imageAttributes.ImageDescription);
                 await saveImage(imageRepository, imageAttributes, image, platformConfiguration);
             }
             return await _modelResponseFormatter.replaceImageMarkupsByImageLinks(modelResponse, imagesAttributes);
@@ -51,9 +51,9 @@ namespace Mirra_Orchestrator.Service
             imageAttributes.ImageUrl = await imageRepository.SaveImage(platformConfiguration.Url, platformConfiguration.Username, platformConfiguration.Password, image);
         }
 
-        private async Task<byte[]> generateImage(ImageInsideContent imageAttributes)
+        private async Task<byte[]> generateImage(string imageDescription)
         {
-            return await _modelCommunicationService.GetImageResponse(imageAttributes.ImageDescription);
+            return await _modelCommunicationService.GetImageResponse(imageDescription);
         }
 
         private List<ImageInsideContent> recoverListOfImagesToBeGenerated(string modelResponse)
@@ -100,6 +100,26 @@ namespace Mirra_Orchestrator.Service
             ConversationMetadata metadata = new ConversationMetadata { SchedulingId = schedulingId };
             var modelResponse = await _modelCommunicationService.GetTextResponse(string.Empty, formattedPrompt, metadata);
             return modelResponse.ToString();
+        }
+
+        public async Task<InstagramPost> GenerateInstagramSinglePost(int schedulingId, Parameters parameters, ContentType contentType, List<Content> lastPosts)
+        {
+            var instagramPost = await generateInstagramPostDescription(schedulingId, parameters, contentType, lastPosts);
+            instagramPost.Image = await generateImage(instagramPost.ImageDescription);
+            return instagramPost;
+        }
+
+        public Task<InstagramPost> GenerateInstagramCarrousselPost(int schedulingId, Parameters parameters, ContentType contentType, List<Content> lastPosts)
+        {
+            throw new NotImplementedException();
+        }
+
+        private async Task<InstagramPost> generateInstagramPostDescription(int schedulingId, Parameters parameters, ContentType contentType, List<Content> lastPosts)
+        {
+            var formattedPrompt = await _promptFormatterService.ReplacePromptVariables(contentType.Prompt, parameters, lastPosts);
+            ConversationMetadata metadata = new ConversationMetadata { SchedulingId = schedulingId };
+            var modelResponse = await _modelCommunicationService.GetTextResponse(contentType.SystemPrompt, formattedPrompt, metadata);
+            return _modelResponseFormatter.GetInstagramPostFromModelResponse(modelResponse.ToString());
         }
     }
 }

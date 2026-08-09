@@ -1,6 +1,8 @@
-﻿using Mirra_Orchestrator.Integration.Model.Request;
+﻿using Mirra_Orchestrator.Exception;
+using Mirra_Orchestrator.Integration.Model.Request;
 using Mirra_Orchestrator.Model;
 using Mirra_Orchestrator.Service.Interfaces;
+using Newtonsoft.Json;
 using System.Text.RegularExpressions;
 
 namespace Mirra_Orchestrator.Service
@@ -15,6 +17,26 @@ namespace Mirra_Orchestrator.Service
             postContent = removeBlogPostsCommonErrors(postContent);
             WordpressBlogPostRequest wordpressBlogPost = new(postTitle, postContent);
             return wordpressBlogPost;
+        }
+
+        public InstagramPost GetInstagramPostFromModelResponse(string modelResponse)
+        {
+            var instagramPost = JsonConvert.DeserializeObject<InstagramPost>(getJsonFromModelResponse(modelResponse));
+
+            if (instagramPost == null || string.IsNullOrWhiteSpace(instagramPost.ImageDescription))
+                throw new ModelResponseException("A resposta do modelo não contém a descrição da imagem do post.");
+
+            return instagramPost;
+        }
+
+        private string getJsonFromModelResponse(string modelResponse)
+        {
+            var jsonMatch = Regex.Match(modelResponse ?? string.Empty, @"\{[\s\S]*\}");
+
+            if (!jsonMatch.Success)
+                throw new ModelResponseException("A resposta do modelo não contém um JSON.");
+
+            return jsonMatch.Value;
         }
 
         public async Task<string> replaceImageMarkupsByImageLinks(string modelResponse, List<ImageInsideContent> imageAttributes)

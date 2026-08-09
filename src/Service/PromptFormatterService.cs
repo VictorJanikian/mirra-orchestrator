@@ -26,6 +26,15 @@ namespace Mirra_Orchestrator.Service
                 { "Language", NotInformedIfEmpty(parameters.Language) },
                 { "CTA", NotInformedIfEmpty(parameters.CTA) },
                 { "SearchIntent", NotInformedIfEmpty(parameters.SearchIntent) },
+                { "VisualHookInstructions", NotInformedIfEmpty(parameters.VisualHookInstructions) },
+                { "CaptionInstructions", NotInformedIfEmpty(parameters.CaptionInstructions) },
+                { "ColorPalette", NotInformedIfEmpty(parameters.ColorPalette) },
+                { "VisualLayout", NotInformedIfEmpty(parameters.VisualLayout) },
+                { "TextOnImage", NotInformedIfEmpty(parameters.TextOnImage) },
+                { "CaptionSize", NotInformedIfEmpty(getCaptionSize(parameters.CaptionSize)) },
+                { "HashtagsStrategy", NotInformedIfEmpty(parameters.HashtagsStrategy) },
+                { "AvoidTopics", NotInformedIfEmpty(parameters.AvoidTopics) },
+                { "ContentTone", NotInformedIfEmpty(parameters.ContentTone) },
                 { "LastContents", NotInformedIfEmpty(getLastContents(lastContents)) },
             };
 
@@ -46,6 +55,13 @@ namespace Mirra_Orchestrator.Service
             return string.IsNullOrWhiteSpace(value)
                 ? "(not informed)"
                 : value;
+        }
+
+        private string getCaptionSize(CaptionSize captionSize)
+        {
+            return captionSize == null
+                ? string.Empty
+                : captionSize.Name;
         }
 
 

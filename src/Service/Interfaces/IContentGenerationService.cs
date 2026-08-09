@@ -8,6 +8,7 @@ namespace Mirra_Orchestrator.Service.Interfaces
     {
         Task<WordpressBlogPostRequest> GenerateBlogPost(int schedulingId, Parameters parameters, CustomerPlatformConfiguration platformConfiguration, ContentType contentType, List<Content> lastPosts, IImageRepository imageRepository);
         Task<string> GenerateBlogPostSummary(int schedulingId, string originalPost, string summaryPrompt);
-
+        Task<InstagramPost> GenerateInstagramSinglePost(int schedulingId, Parameters parameters, ContentType contentType, List<Content> lastPosts);
+        Task<InstagramPost> GenerateInstagramCarrousselPost(int schedulingId, Parameters parameters, ContentType contentType, List<Content> lastPosts);
     }
 }

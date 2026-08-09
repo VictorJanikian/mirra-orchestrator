@@ -13,9 +13,9 @@ namespace Mirra_Orchestrator.Service
             _contentRepository = contentRepository;
         }
 
-        public async Task<List<Content>> getLastContentsFrom(CustomerPlatformConfiguration configurations)
+        public async Task<List<Content>> getLastContentsFrom(CustomerPlatformConfiguration configuration)
         {
-            return await _contentRepository.GetByCustomerAndPlatformConfiguration(configurations);
+            return await _contentRepository.GetByCustomerAndPlatformConfiguration(configuration);
         }
     }
 }
