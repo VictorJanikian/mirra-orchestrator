@@ -1,4 +1,6 @@
-﻿namespace Mirra_Orchestrator.Integration.Model.Request
+﻿using Newtonsoft.Json;
+
+namespace Mirra_Orchestrator.Integration.Model.Request
 {
     public class WordpressBlogPostRequest
     {
@@ -13,6 +15,10 @@
         public string content { get; set; }
 
         public string status { get; set; } = "publish";
+
+        // Imagem de capa (destacada) do post - id do anexo em /wp/v2/media
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public int? featured_media { get; set; }
 
         public override string ToString()
         {

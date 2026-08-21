@@ -3,6 +3,7 @@ using Mirra_Orchestrator.Exception;
 using Mirra_Orchestrator.Helpers;
 using Mirra_Orchestrator.Integration.Interfaces;
 using Mirra_Orchestrator.Integration.Model.Request;
+using Mirra_Orchestrator.Integration.Model.Response;
 using Mirra_Orchestrator.Model;
 using System.Text.Json;
 using static Mirra_Orchestrator.Helpers.JsonHelper;
@@ -47,7 +48,7 @@ namespace Mirra_Orchestrator.Integration
         }
 
 
-        public async Task<string> SaveImage(string url, string username, string password, byte[] image)
+        public async Task<SavedImage> SaveImage(string url, string username, string password, byte[] image)
         {
             var authenticationParameters = new Dictionary<BasicAuthenticationParameter, string>()
             {
@@ -67,22 +68,25 @@ namespace Mirra_Orchestrator.Integration
 
 
             using var wordpressResponse = await _restClient.post(endpoint, content, authenticationParameters);
-            return await getMediaUrlFromResponse(wordpressResponse);
+            return await getSavedImageFromResponse(wordpressResponse);
 
         }
 
-        private async Task<string> getMediaUrlFromResponse(HttpResponseMessage response)
+        private async Task<SavedImage> getSavedImageFromResponse(HttpResponseMessage response)
         {
             response.EnsureSuccessStatusCode();
 
             var responseStream = await response.Content.ReadAsStreamAsync();
             using var responseJson = await JsonDocument.ParseAsync(responseStream);
 
-            // Retorna a URL da imagem
-            if (responseJson.RootElement.TryGetProperty("source_url", out JsonElement urlElement))
-                return urlElement.GetString()!;
+            // Retorna o id e a URL da imagem
+            if (!responseJson.RootElement.TryGetProperty("source_url", out JsonElement urlElement))
+                throw new WordpressException("A resposta não contém o atributo 'source_url'.");
 
-            throw new WordpressException("A resposta não contém o atributo 'source_url'.");
+            if (!responseJson.RootElement.TryGetProperty("id", out JsonElement idElement))
+                throw new WordpressException("A resposta não contém o atributo 'id'.");
+
+            return new SavedImage(idElement.GetInt32(), urlElement.GetString()!);
         }
 
     }

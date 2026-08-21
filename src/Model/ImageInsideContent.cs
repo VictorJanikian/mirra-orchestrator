@@ -7,6 +7,7 @@
         public int IndexOnText { get; set; }
         public int MarkupLength { get; set; }
         public string ImageUrl { get; set; }
+        public int ImageId { get; set; }
 
 
     }

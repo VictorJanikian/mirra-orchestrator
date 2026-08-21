@@ -28,27 +28,36 @@ namespace Mirra_Orchestrator.Service
             var formattedPrompt = await _promptFormatterService.ReplacePromptVariables(prompt, parameters, lastPosts);
             ConversationMetadata metadata = new ConversationMetadata { SchedulingId = schedulingId };
             var modelResponse = await _modelCommunicationService.GetTextResponse(systemPrompt, formattedPrompt, metadata);
-            var postRetrievedFromModelResponse = _modelResponseFormatter.GetWordpressBlogPostFromModelResponse(modelResponse.ToString());
-            postRetrievedFromModelResponse.content = await includeImages(platformConfiguration, postRetrievedFromModelResponse.content, imageRepository);
-            return postRetrievedFromModelResponse;
+            var wordpressPostRequest = _modelResponseFormatter.GetWordpressBlogPostFromModelResponse(modelResponse.ToString());
+            await includeImages(platformConfiguration, wordpressPostRequest, imageRepository);
+            return wordpressPostRequest;
 
         }
 
-        private async Task<string> includeImages(CustomerPlatformConfiguration platformConfiguration, string modelResponse, IImageRepository imageRepository)
+        private async Task includeImages(CustomerPlatformConfiguration platformConfiguration, WordpressBlogPostRequest blogPost, IImageRepository imageRepository)
         {
-            var imagesAttributes = recoverListOfImagesToBeGenerated(modelResponse);
+            var imagesAttributes = recoverListOfImagesToBeGenerated(blogPost.content);
             foreach (var imageAttributes in imagesAttributes)
             {
                 byte[] image = await generateImage(imageAttributes.ImageDescription);
                 await saveImage(imageRepository, imageAttributes, image, platformConfiguration);
             }
-            return await _modelResponseFormatter.replaceImageMarkupsByImageLinks(modelResponse, imagesAttributes);
+            blogPost.featured_media = getFeaturedImageId(imagesAttributes);
+            blogPost.content = await _modelResponseFormatter.replaceImageMarkupsByImageLinks(blogPost.content, imagesAttributes);
+        }
 
+        // A imagem de capa do post e a primeira imagem gerada para o conteudo
+        private int? getFeaturedImageId(List<ImageInsideContent> imagesAttributes)
+        {
+            var firstImage = imagesAttributes.OrderBy(image => image.IndexOnText).FirstOrDefault();
+            return firstImage?.ImageId;
         }
 
         private async Task saveImage(IImageRepository imageRepository, ImageInsideContent imageAttributes, byte[] image, CustomerPlatformConfiguration platformConfiguration)
         {
-            imageAttributes.ImageUrl = await imageRepository.SaveImage(platformConfiguration.Url, platformConfiguration.Username, platformConfiguration.Password, image);
+            var savedImage = await imageRepository.SaveImage(platformConfiguration.Url, platformConfiguration.Username, platformConfiguration.Password, image);
+            imageAttributes.ImageUrl = savedImage.Url;
+            imageAttributes.ImageId = savedImage.Id;
         }
 
         private async Task<byte[]> generateImage(string imageDescription)
