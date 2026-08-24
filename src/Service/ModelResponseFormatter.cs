@@ -51,7 +51,7 @@ namespace Mirra_Orchestrator.Service
             {
                 var htmlImage = $@"
                                 <figure>
-                                    <img src=""{image.ImageUrl}"" alt=""{System.Net.WebUtility.HtmlEncode(image.ImageCaption)}"" />
+                                    <img src=""{image.ImageUrl}"" alt=""{System.Net.WebUtility.HtmlEncode(image.ImageAlt)}"" />
                                     <figcaption><em>{System.Net.WebUtility.HtmlEncode(image.ImageCaption)}</em></figcaption>
                                 </figure>";
 
@@ -66,6 +66,7 @@ namespace Mirra_Orchestrator.Service
         {
             modelResponse = removeSpecialCharactersFromImageCaptions(modelResponse);
             modelResponse = removeItalicTagsWrappingEntireParagraphs(modelResponse);
+            modelResponse = includeLineBreakAfterImageMarkups(modelResponse);
             return modelResponse;
         }
 
@@ -88,13 +89,14 @@ namespace Mirra_Orchestrator.Service
             if (string.IsNullOrEmpty(modelResponse))
                 return modelResponse;
 
-            // Pattern para encontrar [IMG: ... &&& ...]
-            var pattern = @"\[IMG:\s*(.+?)\s*&&&\s*(.+?)\s*\]";
+            // Pattern para encontrar [IMG: ... &&& ... &&& ...]
+            var pattern = @"\[IMG:\s*(.+?)\s*&&&\s*(.+?)\s*&&&\s*(.+?)\s*\]";
 
             return Regex.Replace(modelResponse, pattern, match =>
             {
                 var description = match.Groups[1].Value.Trim();
                 var caption = match.Groups[2].Value.Trim();
+                var alt = match.Groups[3].Value.Trim();
 
                 // Remove asteriscos do início e fim da legenda
                 caption = caption.Trim('*');
@@ -105,8 +107,18 @@ namespace Mirra_Orchestrator.Service
                 // Remove </i> do fim
                 caption = Regex.Replace(caption, @"\s*</i>$", "", RegexOptions.IgnoreCase);
 
-                return $"[IMG: {description} &&& {caption}]";
+                return $"[IMG: {description} &&& {caption} &&& {alt}]";
             });
+        }
+
+        // A quebra de linha separa a imagem do parágrafo seguinte
+        internal string includeLineBreakAfterImageMarkups(string modelResponse)
+        {
+            if (string.IsNullOrEmpty(modelResponse))
+                return modelResponse;
+
+            var pattern = @"\[IMG:\s*(.+?)\s*&&&\s*(.+?)\s*&&&\s*(.+?)\s*\]";
+            return Regex.Replace(modelResponse, pattern, match => $"{match.Value}<br>");
         }
 
     }

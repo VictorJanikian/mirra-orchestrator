@@ -37,25 +37,55 @@ namespace Mirra_Orchestrator.Service
         private async Task includeImages(CustomerPlatformConfiguration platformConfiguration, WordpressBlogPostRequest blogPost, IImageRepository imageRepository)
         {
             var imagesAttributes = recoverListOfImagesToBeGenerated(blogPost.content);
+            var featuredImage = getFeaturedImage(imagesAttributes);
+
             foreach (var imageAttributes in imagesAttributes)
             {
                 byte[] image = await generateImage(imageAttributes.ImageDescription);
-                await saveImage(imageRepository, imageAttributes, image, platformConfiguration);
+                await saveImage(imageRepository, imageAttributes, image, platformConfiguration, imageAttributes == featuredImage);
             }
-            blogPost.featured_media = getFeaturedImageId(imagesAttributes);
-            blogPost.content = await _modelResponseFormatter.replaceImageMarkupsByImageLinks(blogPost.content, imagesAttributes);
+
+            blogPost.featured_media = featuredImage?.ImageId;
+            var imagesInsideBody = removeFeaturedImageMarkup(blogPost, featuredImage, imagesAttributes);
+            blogPost.content = await _modelResponseFormatter.replaceImageMarkupsByImageLinks(blogPost.content, imagesInsideBody);
         }
 
         // A imagem de capa do post e a primeira imagem gerada para o conteudo
-        private int? getFeaturedImageId(List<ImageInsideContent> imagesAttributes)
+        private ImageInsideContent? getFeaturedImage(List<ImageInsideContent> imagesAttributes)
         {
-            var firstImage = imagesAttributes.OrderBy(image => image.IndexOnText).FirstOrDefault();
-            return firstImage?.ImageId;
+            return imagesAttributes.OrderBy(image => image.IndexOnText).FirstOrDefault();
         }
 
-        private async Task saveImage(IImageRepository imageRepository, ImageInsideContent imageAttributes, byte[] image, CustomerPlatformConfiguration platformConfiguration)
+        // A capa nao se repete no corpo do post: o markup dela e removido e os indices
+        // das demais imagens, todas posteriores, sao recuados pelo tamanho removido
+        private List<ImageInsideContent> removeFeaturedImageMarkup(WordpressBlogPostRequest blogPost, ImageInsideContent? featuredImage, List<ImageInsideContent> imagesAttributes)
         {
-            var savedImage = await imageRepository.SaveImage(platformConfiguration.Url, platformConfiguration.Username, platformConfiguration.Password, image);
+            if (featuredImage == null)
+                return imagesAttributes;
+
+            var removedLength = featuredImage.MarkupLength + getLineBreakLengthAfterMarkup(blogPost.content, featuredImage);
+            blogPost.content = blogPost.content.Remove(featuredImage.IndexOnText, removedLength);
+
+            var imagesInsideBody = imagesAttributes.Where(image => image != featuredImage).ToList();
+            foreach (var image in imagesInsideBody)
+                image.IndexOnText -= removedLength;
+
+            return imagesInsideBody;
+        }
+
+        private int getLineBreakLengthAfterMarkup(string content, ImageInsideContent image)
+        {
+            var lineBreak = "<br>";
+            var indexAfterMarkup = image.IndexOnText + image.MarkupLength;
+            var contentAfterMarkup = content.Substring(indexAfterMarkup);
+            return contentAfterMarkup.StartsWith(lineBreak) ? lineBreak.Length : 0;
+        }
+
+        private async Task saveImage(IImageRepository imageRepository, ImageInsideContent imageAttributes, byte[] image, CustomerPlatformConfiguration platformConfiguration, bool isFeaturedImage)
+        {
+            // A capa nao leva legenda: ela seria exibida pelo tema do WordPress logo abaixo da imagem destacada
+            var caption = isFeaturedImage ? null : imageAttributes.ImageCaption;
+            var savedImage = await imageRepository.SaveImage(platformConfiguration.Url, platformConfiguration.Username, platformConfiguration.Password, image, imageAttributes.ImageAlt, caption);
             imageAttributes.ImageUrl = savedImage.Url;
             imageAttributes.ImageId = savedImage.Id;
         }
@@ -76,10 +106,11 @@ namespace Mirra_Orchestrator.Service
 
             foreach (Match match in matches)
             {
-                if (match.Success && match.Groups.Count == 3)
+                if (match.Success && match.Groups.Count == 4)
                 {
                     string imageDescription = match.Groups[1].Value.Trim();
                     string imageCaption = match.Groups[2].Value.Trim();
+                    string imageAlt = match.Groups[3].Value.Trim();
                     int indexOnText = match.Index;
                     int markupLength = match.Length;
 
@@ -87,6 +118,7 @@ namespace Mirra_Orchestrator.Service
                     {
                         ImageDescription = imageDescription,
                         ImageCaption = imageCaption,
+                        ImageAlt = imageAlt,
                         IndexOnText = indexOnText,
                         MarkupLength = markupLength
                     });
@@ -98,8 +130,8 @@ namespace Mirra_Orchestrator.Service
 
         private MatchCollection findImagesMarkupOnModelResponse(string modelResponse)
         {
-            // Pattern: [IMG: {description} &&& {subtitle}]
-            var pattern = @"\[IMG:\s*(.+?)\s*&&&\s*(.+?)\s*\]";
+            // Pattern: [IMG: {description} &&& {subtitle} &&& {alt}]
+            var pattern = @"\[IMG:\s*(.+?)\s*&&&\s*(.+?)\s*&&&\s*(.+?)\s*\]";
             return Regex.Matches(modelResponse, pattern);
         }
 

@@ -5,6 +5,7 @@ using Mirra_Orchestrator.Integration.Interfaces;
 using Mirra_Orchestrator.Integration.Model.Request;
 using Mirra_Orchestrator.Integration.Model.Response;
 using Mirra_Orchestrator.Model;
+using System.Text;
 using System.Text.Json;
 using static Mirra_Orchestrator.Helpers.JsonHelper;
 namespace Mirra_Orchestrator.Integration
@@ -48,7 +49,7 @@ namespace Mirra_Orchestrator.Integration
         }
 
 
-        public async Task<SavedImage> SaveImage(string url, string username, string password, byte[] image)
+        public async Task<SavedImage> SaveImage(string url, string username, string password, byte[] image, string altText, string? caption)
         {
             var authenticationParameters = new Dictionary<BasicAuthenticationParameter, string>()
             {
@@ -58,18 +59,28 @@ namespace Mirra_Orchestrator.Integration
 
             var endpoint = $"{url.TrimEnd('/')}/wp/v2/media";
 
-            using var content = new ByteArrayContent(image);
-
-            content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
-            content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
-            {
-                FileName = $"image_{DateTime.UtcNow:yyyyMMddHHmmss}.jpg"
-            };
-
+            using var content = buildImageUploadContent(image, altText, caption);
 
             using var wordpressResponse = await _restClient.post(endpoint, content, authenticationParameters);
             return await getSavedImageFromResponse(wordpressResponse);
 
+        }
+
+        // O alt e a legenda pertencem ao anexo, entao vao no mesmo multipart do arquivo
+        private MultipartFormDataContent buildImageUploadContent(byte[] image, string altText, string? caption)
+        {
+            var content = new MultipartFormDataContent();
+
+            var imageContent = new ByteArrayContent(image);
+            imageContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
+
+            content.Add(imageContent, "file", $"image_{DateTime.UtcNow:yyyyMMddHHmmss}.jpg");
+            content.Add(new StringContent(altText, Encoding.UTF8), "alt_text");
+
+            if (!string.IsNullOrWhiteSpace(caption))
+                content.Add(new StringContent(caption, Encoding.UTF8), "caption");
+
+            return content;
         }
 
         private async Task<SavedImage> getSavedImageFromResponse(HttpResponseMessage response)

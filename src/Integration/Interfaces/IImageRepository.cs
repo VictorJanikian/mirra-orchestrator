@@ -4,6 +4,6 @@ namespace Mirra_Orchestrator.Integration.Interfaces
 {
     public interface IImageRepository
     {
-        public Task<SavedImage> SaveImage(string url, string username, string password, byte[] image);
+        public Task<SavedImage> SaveImage(string url, string username, string password, byte[] image, string altText, string? caption);
     }
 }
