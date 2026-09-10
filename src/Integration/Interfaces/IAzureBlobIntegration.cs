@@ -4,5 +4,6 @@ namespace Mirra_Orchestrator.Integration.Interfaces
     {
         Task<string> SaveImage(string fileName, byte[] image);
         Task<string> SaveText(string fileName, string text);
+        string GenerateTemporaryReadUrl(string fileName, TimeSpan lifetime);
     }
 }

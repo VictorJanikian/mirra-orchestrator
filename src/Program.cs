@@ -62,6 +62,7 @@ var host = new HostBuilder()
         services.AddScoped<IModelResponseFormatter, ModelResponseFormatter>();
 
         services.AddScoped<IWordpressIntegration, WordpressIntegration>();
+        services.AddScoped<IInstagramIntegration, InstagramIntegration>();
         services.AddScoped<IOpenAIIntegration, OpenAIIntegration>();
         services.AddScoped<IAzureBlobIntegration, AzureBlobIntegration>();
         services.AddScoped<IRestClient, RestClient>();

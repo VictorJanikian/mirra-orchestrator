@@ -8,6 +8,7 @@ namespace Mirra_Orchestrator.Helpers
     {
         public static string BLOG_IMAGE_MODEL = "gpt-image-2";
         public static string BLOG_TEXT_MODEL = "gpt-5.4";
+        public static string INSTAGRAM_GRAPH_API_URL = "https://graph.facebook.com/v23.0";
 
     }
 }

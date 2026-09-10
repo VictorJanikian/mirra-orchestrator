@@ -1,6 +1,7 @@
 using Azure.Storage;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using Azure.Storage.Sas;
 using Microsoft.Extensions.Configuration;
 using Mirra_Orchestrator.Exception;
 using Mirra_Orchestrator.Integration.Interfaces;
@@ -27,6 +28,30 @@ namespace Mirra_Orchestrator.Integration
         {
             using var textStream = new MemoryStream(Encoding.UTF8.GetBytes(text));
             return await uploadBlob(fileName, textStream, "text/plain");
+        }
+
+        // O container e privado, entao quem esta fora do Azure (a Graph API do Instagram, por exemplo)
+        // so consegue ler a imagem por um link assinado e com prazo de validade
+        public string GenerateTemporaryReadUrl(string fileName, TimeSpan lifetime)
+        {
+            var blob = getContainerClient().GetBlobClient(fileName);
+
+            if (!blob.CanGenerateSasUri)
+                throw new AzureBlobException("Não foi possível assinar a URL do blob: credencial de chave compartilhada indisponível.");
+
+            var sasBuilder = new BlobSasBuilder
+            {
+                BlobContainerName = blob.BlobContainerName,
+                BlobName = blob.Name,
+                Resource = "b",
+                // Uma folga no inicio evita que a assinatura seja recusada por diferenca de relogio
+                StartsOn = DateTimeOffset.UtcNow.AddMinutes(-5),
+                ExpiresOn = DateTimeOffset.UtcNow.Add(lifetime)
+            };
+
+            sasBuilder.SetPermissions(BlobSasPermissions.Read);
+
+            return blob.GenerateSasUri(sasBuilder).ToString();
         }
 
         private async Task<string> uploadBlob(string fileName, Stream content, string contentType)

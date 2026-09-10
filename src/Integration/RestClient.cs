@@ -36,6 +36,33 @@ namespace Mirra_Orchestrator.Integration
         }
 
 
+        // APIs que nao usam Basic auth carregam a credencial no proprio payload, como a Graph API do Instagram
+        public async Task<HttpResponseMessage> post(string url, HttpContent data)
+        {
+            var client = _factory.CreateClient();
+
+            var response = await client.PostAsync(url, data);
+
+            if (!response.IsSuccessStatusCode)
+                throw new RestException($"{response.StatusCode}: {await response.Content.ReadAsStringAsync()}");
+
+            return response;
+        }
+
+
+        public async Task<HttpResponseMessage> get(string url)
+        {
+            var client = _factory.CreateClient();
+
+            var response = await client.GetAsync(url);
+
+            if (!response.IsSuccessStatusCode)
+                throw new RestException($"{response.StatusCode}: {await response.Content.ReadAsStringAsync()}");
+
+            return response;
+        }
+
+
         private void setAuthorizationHeaders(HttpClient client, string username, string password)
         {
             var byteArray = Encoding.ASCII.GetBytes($"{username}:{password}");

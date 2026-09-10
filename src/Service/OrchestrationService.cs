@@ -11,17 +11,20 @@ namespace Mirra_Orchestrator.Service
     {
 
         IWordpressIntegration _wordpressIntegration;
+        IInstagramIntegration _instagramIntegration;
         IAzureBlobIntegration _azureBlobIntegration;
         IContentGenerationService _contentGenerationService;
         IContentRepository _contentRepository;
         IPreviousContentRecoveryService _previousContentRecoveryService;
         public OrchestrationService(IWordpressIntegration wordpressIntegration,
+            IInstagramIntegration instagramIntegration,
             IAzureBlobIntegration azureBlobIntegration,
             IContentGenerationService contentGenerationService,
             IContentRepository contentRepository,
             IPreviousContentRecoveryService previousContentRecoveryService)
         {
             _wordpressIntegration = wordpressIntegration;
+            _instagramIntegration = instagramIntegration;
             _azureBlobIntegration = azureBlobIntegration;
             _contentGenerationService = contentGenerationService;
             _contentRepository = contentRepository;
@@ -65,11 +68,13 @@ namespace Mirra_Orchestrator.Service
         {
             List<Content> lastPosts = await getLastsPostsForThis(configuration);
             var instagramPost = await generateInstagramPost(schedule, parameters, lastPosts);
-            var imageUrl = await sendInstagramPostToBlobStorage(schedule, instagramPost);
+            var savedImage = await sendInstagramPostToBlobStorage(schedule, instagramPost);
+            await publishInstagramPost(configuration, savedImage.FileName, instagramPost.Caption);
+
             var content = new Content()
             {
                 ContentTitle = parameters.ThemeTitle,
-                ContentUrl = imageUrl,
+                ContentUrl = savedImage.Url,
                 ContentSummary = instagramPost.ImageDescription,
                 CustomerPlatformConfiguration = configuration,
                 Parameters = parameters
@@ -92,11 +97,22 @@ namespace Mirra_Orchestrator.Service
 
         }
 
-        private async Task<string> sendInstagramPostToBlobStorage(Scheduling schedule, InstagramPost instagramPost)
+        private async Task<(string FileName, string Url)> sendInstagramPostToBlobStorage(Scheduling schedule, InstagramPost instagramPost)
         {
             var fileName = buildInstagramPostFileName(schedule);
+            var imageFileName = $"{fileName}.png";
+
             await _azureBlobIntegration.SaveText($"{fileName}.txt", instagramPost.Caption);
-            return await _azureBlobIntegration.SaveImage($"{fileName}.png", instagramPost.Image);
+            var imageUrl = await _azureBlobIntegration.SaveImage(imageFileName, instagramPost.Image);
+
+            return (imageFileName, imageUrl);
+        }
+
+        // A Graph API baixa a imagem por conta propria, entao o container privado precisa expor um link assinado
+        private async Task publishInstagramPost(CustomerPlatformConfiguration configuration, string imageFileName, string caption)
+        {
+            var temporaryImageUrl = _azureBlobIntegration.GenerateTemporaryReadUrl(imageFileName, TimeSpan.FromHours(1));
+            await _instagramIntegration.PublishImagePost(configuration, temporaryImageUrl, caption);
         }
 
         private string buildInstagramPostFileName(Scheduling schedule)
