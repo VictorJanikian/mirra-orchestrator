@@ -31,10 +31,10 @@ namespace Mirra_Orchestrator.Integration
             var creationId = await createMediaContainer(userId, accessToken, imageUrl, caption);
             await waitUntilMediaContainerIsReady(creationId, accessToken);
 
-            return await publishMediaContainer(userId, accessToken, creationId);
+            return await publishMediaContainer(userId.ToString(), accessToken, creationId);
         }
 
-        private async Task<string> createMediaContainer(string userId, string accessToken, string imageUrl, string caption)
+        private async Task<string> createMediaContainer(long? userId, string accessToken, string imageUrl, string caption)
         {
             var parameters = new Dictionary<string, string>
             {
@@ -46,7 +46,7 @@ namespace Mirra_Orchestrator.Integration
                 parameters.Add("caption", caption);
 
             using var content = new FormUrlEncodedContent(parameters);
-            using var response = await _restClient.post(buildUserEndpoint(userId, "media"), content);
+            using var response = await _restClient.post(buildUserEndpoint(userId.ToString(), "media"), content);
 
             return await getIdFromResponse(response);
         }
@@ -123,6 +123,14 @@ namespace Mirra_Orchestrator.Integration
         private string getRequiredConfiguration(string value, string fieldName)
         {
             if (string.IsNullOrWhiteSpace(value))
+                throw new InstagramException($"O campo '{fieldName}' não está preenchido para este cliente.");
+
+            return value;
+        }
+
+        private long? getRequiredConfiguration(long? value, string fieldName)
+        {
+            if (!value.HasValue || value == 0)
                 throw new InstagramException($"O campo '{fieldName}' não está preenchido para este cliente.");
 
             return value;

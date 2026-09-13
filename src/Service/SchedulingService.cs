@@ -39,6 +39,7 @@ namespace Mirra_Orchestrator.Service
                 }
 
                 catch (System.Exception e)
+
                 {
                     _logger.LogInformation(e.Message + " " + e.StackTrace);
                 }
@@ -48,7 +49,7 @@ namespace Mirra_Orchestrator.Service
 
         private bool ShouldExecuteNow(Scheduling scheduling)
         {
-            if (scheduling.SchedulingStatus.Id != (int)ESchedulingStatus.ACTIVE)
+            if (scheduling.SchedulingStatus.Id != (int)ESchedulingStatus.ACTIVE || scheduling.IsDeleted)
                 return false;
 
             var cronExpression = CronTimezoneHelper.ConvertCronToLocal(scheduling.Interval, scheduling.Timezone);

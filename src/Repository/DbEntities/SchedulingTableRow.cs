@@ -14,6 +14,7 @@ namespace Mirra_Orchestrator.Repository.DbEntities
         public ContentTypeTableRow ContentType { get; set; }
         public string Interval { get; set; }
         public string Timezone { get; set; }
+        public Boolean IsDeleted { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 }
