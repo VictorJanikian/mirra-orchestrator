@@ -14,6 +14,9 @@ namespace Mirra_Orchestrator.Integration
         private const string MEDIA_CONTAINER_READY = "FINISHED";
         private const string MEDIA_CONTAINER_IN_PROGRESS = "IN_PROGRESS";
 
+        private const string AI_GENERATED_LABEL_FIELD = "is_ai_generated";
+        private const string PAID_PARTNERSHIP_LABEL_FIELD = "is_paid_partnership";
+
         private readonly IRestClient _restClient;
 
         public InstagramIntegration(IRestClient restClient)
@@ -23,18 +26,18 @@ namespace Mirra_Orchestrator.Integration
 
         // A publicacao na Graph API tem duas etapas: primeiro sobe-se um container de midia
         // apontando para a imagem, depois esse container e publicado no perfil
-        public async Task<string> PublishImagePost(CustomerPlatformConfiguration platformConfiguration, string imageUrl, string caption)
+        public async Task<string> PublishImagePost(CustomerPlatformConfiguration platformConfiguration, string imageUrl, string caption, InstagramPostLabels labels)
         {
             var accessToken = getRequiredConfiguration(platformConfiguration.InstagramAccessToken, nameof(platformConfiguration.InstagramAccessToken));
             var userId = getRequiredConfiguration(platformConfiguration.InstagramUserId, nameof(platformConfiguration.InstagramUserId));
 
-            var creationId = await createMediaContainer(userId, accessToken, imageUrl, caption);
+            var creationId = await createMediaContainer(userId, accessToken, imageUrl, caption, labels);
             await waitUntilMediaContainerIsReady(creationId, accessToken);
 
             return await publishMediaContainer(userId.ToString(), accessToken, creationId);
         }
 
-        private async Task<string> createMediaContainer(long? userId, string accessToken, string imageUrl, string caption)
+        private async Task<string> createMediaContainer(long? userId, string accessToken, string imageUrl, string caption, InstagramPostLabels labels)
         {
             var parameters = new Dictionary<string, string>
             {
@@ -44,6 +47,12 @@ namespace Mirra_Orchestrator.Integration
 
             if (!string.IsNullOrWhiteSpace(caption))
                 parameters.Add("caption", caption);
+
+            if (labels != null && labels.IsAIGenerated)
+                parameters.Add(AI_GENERATED_LABEL_FIELD, "true");
+
+            if (labels != null && labels.IsPaidPartnership)
+                parameters.Add(PAID_PARTNERSHIP_LABEL_FIELD, "true");
 
             using var content = new FormUrlEncodedContent(parameters);
             using var response = await _restClient.post(buildUserEndpoint(userId.ToString(), "media"), content);

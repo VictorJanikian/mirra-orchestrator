@@ -69,7 +69,7 @@ namespace Mirra_Orchestrator.Service
             List<Content> lastPosts = await getLastsPostsForThis(configuration);
             var instagramPost = await generateInstagramPost(schedule, parameters, lastPosts);
             var savedImage = await sendInstagramPostToBlobStorage(schedule, instagramPost);
-            await publishInstagramPost(configuration, savedImage.FileName, instagramPost.Caption);
+            await publishInstagramPost(configuration, savedImage.FileName, instagramPost.Caption, buildInstagramPostLabels(schedule));
 
             var content = new Content()
             {
@@ -109,10 +109,19 @@ namespace Mirra_Orchestrator.Service
         }
 
         // A Graph API baixa a imagem por conta propria, entao o container privado precisa expor um link assinado
-        private async Task publishInstagramPost(CustomerPlatformConfiguration configuration, string imageFileName, string caption)
+        private async Task publishInstagramPost(CustomerPlatformConfiguration configuration, string imageFileName, string caption, InstagramPostLabels labels)
         {
             var temporaryImageUrl = _azureBlobIntegration.GenerateTemporaryReadUrl(imageFileName, TimeSpan.FromHours(1));
-            await _instagramIntegration.PublishImagePost(configuration, temporaryImageUrl, caption);
+            await _instagramIntegration.PublishImagePost(configuration, temporaryImageUrl, caption, labels);
+        }
+
+        private InstagramPostLabels buildInstagramPostLabels(Scheduling schedule)
+        {
+            return new InstagramPostLabels()
+            {
+                IsAIGenerated = schedule.HasInstagramAIGeneratedLabel,
+                IsPaidPartnership = schedule.HasInstagramPartnershipLabel
+            };
         }
 
         private string buildInstagramPostFileName(Scheduling schedule)

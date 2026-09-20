@@ -8,7 +8,11 @@ namespace Mirra_Orchestrator.Repository.Mapper
     {
         public SchedulingTableRowProfile()
         {
-            CreateMap<SchedulingTableRow, Scheduling>();
+            CreateMap<SchedulingTableRow, Scheduling>()
+                .ForMember(destination => destination.HasInstagramAIGeneratedLabel,
+                    options => options.MapFrom(source => source.InstagramAIGeneratedLabel == 1))
+                .ForMember(destination => destination.HasInstagramPartnershipLabel,
+                    options => options.MapFrom(source => source.InstagramPartnershipLabel == 1));
         }
     }
 }

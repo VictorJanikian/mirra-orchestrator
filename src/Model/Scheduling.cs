@@ -8,6 +8,8 @@
         public string Interval { get; set; }
         public string Timezone { get; set; }
         public SchedulingStatus SchedulingStatus { get; set; }
+        public Boolean HasInstagramAIGeneratedLabel { get; set; }
+        public Boolean HasInstagramPartnershipLabel { get; set; }
         public Boolean IsDeleted { get; set; }
 
 

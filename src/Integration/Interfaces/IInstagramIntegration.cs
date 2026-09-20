@@ -4,6 +4,6 @@ namespace Mirra_Orchestrator.Integration.Interfaces
 {
     public interface IInstagramIntegration
     {
-        Task<string> PublishImagePost(CustomerPlatformConfiguration platformConfiguration, string imageUrl, string caption);
+        Task<string> PublishImagePost(CustomerPlatformConfiguration platformConfiguration, string imageUrl, string caption, InstagramPostLabels labels);
     }
 }
