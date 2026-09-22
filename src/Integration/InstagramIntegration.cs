@@ -15,7 +15,6 @@ namespace Mirra_Orchestrator.Integration
         private const string MEDIA_CONTAINER_IN_PROGRESS = "IN_PROGRESS";
 
         private const string AI_GENERATED_LABEL_FIELD = "is_ai_generated";
-        private const string PAID_PARTNERSHIP_LABEL_FIELD = "is_paid_partnership";
 
         private readonly IRestClient _restClient;
 
@@ -50,9 +49,6 @@ namespace Mirra_Orchestrator.Integration
 
             if (labels != null && labels.IsAIGenerated)
                 parameters.Add(AI_GENERATED_LABEL_FIELD, "true");
-
-            if (labels != null && labels.IsPaidPartnership)
-                parameters.Add(PAID_PARTNERSHIP_LABEL_FIELD, "true");
 
             using var content = new FormUrlEncodedContent(parameters);
             using var response = await _restClient.post(buildUserEndpoint(userId.ToString(), "media"), content);

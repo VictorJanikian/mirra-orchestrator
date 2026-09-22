@@ -1,0 +1,23 @@
+meta {
+  name: Consultar status do container
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{graphApiUrl}}/{{creationId}}?fields=status_code,status&access_token={{instagramAccessToken}}
+  body: none
+  auth: none
+}
+
+params:query {
+  fields: status_code,status
+  access_token: {{instagramAccessToken}}
+}
+
+tests {
+  test("container pronto para publicar", function() {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().status_code).to.equal("FINISHED");
+  });
+}

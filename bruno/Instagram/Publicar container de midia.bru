@@ -1,0 +1,29 @@
+meta {
+  name: Publicar container de midia
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{graphApiUrl}}/{{instagramUserId}}/media_publish
+  body: formUrlEncoded
+  auth: none
+}
+
+body:form-urlencoded {
+  creation_id: {{creationId}}
+  access_token: {{instagramAccessToken}}
+}
+
+script:post-response {
+  if (res.getStatus() === 200 && res.getBody().id) {
+    bru.setVar("publishedMediaId", res.getBody().id);
+  }
+}
+
+tests {
+  test("retorna o id da publicacao", function() {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().id).to.be.a("string");
+  });
+}

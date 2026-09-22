@@ -10,9 +10,7 @@ namespace Mirra_Orchestrator.Repository.Mapper
         {
             CreateMap<SchedulingTableRow, Scheduling>()
                 .ForMember(destination => destination.HasInstagramAIGeneratedLabel,
-                    options => options.MapFrom(source => source.InstagramAIGeneratedLabel == 1))
-                .ForMember(destination => destination.HasInstagramPartnershipLabel,
-                    options => options.MapFrom(source => source.InstagramPartnershipLabel == 1));
+                    options => options.MapFrom(source => source.InstagramAIGeneratedLabel == 1));
         }
     }
 }

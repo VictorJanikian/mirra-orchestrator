@@ -120,7 +120,6 @@ namespace Mirra_Orchestrator.Service
             return new InstagramPostLabels()
             {
                 IsAIGenerated = schedule.HasInstagramAIGeneratedLabel,
-                IsPaidPartnership = schedule.HasInstagramPartnershipLabel
             };
         }
 

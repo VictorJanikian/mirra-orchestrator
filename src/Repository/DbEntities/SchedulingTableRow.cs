@@ -15,7 +15,6 @@ namespace Mirra_Orchestrator.Repository.DbEntities
         public string Interval { get; set; }
         public string Timezone { get; set; }
         public int? InstagramAIGeneratedLabel { get; set; }
-        public int? InstagramPartnershipLabel { get; set; }
         public Boolean IsDeleted { get; set; }
         public DateTime CreatedAt { get; set; }
     }

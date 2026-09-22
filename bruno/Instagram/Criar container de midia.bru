@@ -1,0 +1,32 @@
+meta {
+  name: Criar container de midia
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{graphApiUrl}}/{{instagramUserId}}/media
+  body: formUrlEncoded
+  auth: none
+}
+
+body:form-urlencoded {
+  image_url: {{imageUrl}}
+  caption: {{caption}}
+  is_ai_generated: {{isAiGenerated}}
+  is_paid_partnership: {{isPaidPartnership}}
+  access_token: {{instagramAccessToken}}
+}
+
+script:post-response {
+  if (res.getStatus() === 200 && res.getBody().id) {
+    bru.setVar("creationId", res.getBody().id);
+  }
+}
+
+tests {
+  test("retorna o creation_id", function() {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().id).to.be.a("string");
+  });
+}
